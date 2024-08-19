@@ -1,0 +1,170 @@
+openapi: 3.0.1
+info:
+  contact: {}
+  title: multifinance credit api
+  version: 1.0.0
+servers:
+  - url: http://localhost:3001
+paths:
+  /v1/profile/{id}:
+    get:
+      operationId: V1GetProfile
+      parameters:
+        - name: id
+          in: path
+          description: params user id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1GetProfile200Response'
+        '400':
+          description: BAD_REQUEST
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '500':
+          description: INTERNAL SERVER ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: NOT FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+        - profile
+  /v1/register:
+    post:
+      operationId: V1RegisterPost
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V1RegisterPostRequestBody'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1RegisterPost200Response'
+        '400':
+          description: BAD_REQUEST
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '500':
+          description: INTERNAL SERVER ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: NOT FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+        - register
+components:
+  schemas:
+    V1RegisterPost200Response:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+      required:
+        - id
+    V1RegisterPostRequestBody:
+      type: object
+      properties:
+        username:
+          type: string
+          x-oapi-codegen-extra-tags:
+            validate: "required,max=255,min=6"
+        email:
+          type: string
+          x-oapi-codegen-extra-tags:
+            validate: "required,max=255,min=6,email"
+        password:
+          type: string
+          x-oapi-codegen-extra-tags:
+            validate: "required,max=50,min=6"
+        re_password:
+          type: string
+          x-oapi-codegen-extra-tags:
+            validate: "required,eqfield=Password"
+        first_name:
+          type: string
+          x-oapi-codegen-extra-tags:
+            validate: "required,max=20,min=6"
+        last_name:
+          x-oapi-codegen-extra-tags:
+            validate: "required,max=10,min=6"
+      required:
+        - email
+        - first_name
+        - last_name
+        - password
+        - re_password
+        - username
+    V1GetProfile200Response:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+      required:
+        - id
+        - name
+        - username
+        - last_name
+        - first_name
+        - email
+    Error400:
+      type: object
+      properties:
+        request_id:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+      required:
+        - errors
+        - request_id
+    Error:
+      type: object
+      properties:
+        request_id:
+          type: string
+        message:
+          type: string
+      required:
+        - message
+        - request_id
+
