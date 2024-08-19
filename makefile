@@ -16,7 +16,7 @@ up:
 	@$(MIGRATE_CMD) -source file://$(MIGRATE_DIR) -database=$(DB_DSN) up
 
 force:
-	@$(MIGRATE_CMD) -source file://$(MIGRATE_DIR) -database=$(DB_DSN) force 1
+	@$(MIGRATE_CMD) -source file://$(MIGRATE_DIR) -database=$(DB_DSN) force 20240819170341
 
 reset:
 	@$(MIGRATE_CMD) reset -dir $(MIGRATE_DIR)
