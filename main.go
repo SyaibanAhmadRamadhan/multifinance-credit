@@ -9,6 +9,6 @@ func main() {
 	conf.Init()
 
 	infra.NewMinio(conf.GetConfig().Minio)
-	infra.NewOTLP(conf.GetConfig().OpenTelemetry)
+	infra.NewOtel(conf.GetConfig().OpenTelemetry)
 	infra.NewMysql(conf.GetConfig().DatabaseDSN)
 }
