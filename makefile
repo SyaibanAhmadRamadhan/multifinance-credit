@@ -34,3 +34,6 @@ starting-infra:
 
 stop-infra:
 	docker compose -f deployment/docker-compose.yml stop
+
+test:
+	go test -tags test -short -failfast ./...

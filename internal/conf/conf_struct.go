@@ -9,9 +9,10 @@ type config struct {
 }
 
 type ConfigOpenTelemetry struct {
-	Password string `mapstructure:"PASSWORD"`
-	Username string `mapstructure:"USERNAME"`
-	Endpoint string `mapstructure:"ENDPOINT"`
+	Password   string `mapstructure:"PASSWORD"`
+	Username   string `mapstructure:"USERNAME"`
+	Endpoint   string `mapstructure:"ENDPOINT"`
+	TracerName string `mapstructure:"TRACER_NAME"`
 }
 
 type ConfigMinio struct {
