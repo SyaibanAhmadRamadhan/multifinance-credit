@@ -31,5 +31,4 @@ env.override.json
 mock_*.go
 
 # golang air
-.air.toml
 tmp

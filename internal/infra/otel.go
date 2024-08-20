@@ -86,6 +86,7 @@ func (t *otelProvider) start(exp trace.SpanExporter) (*trace.TracerProvider, uti
 	)
 
 	closeFn := func(ctx context.Context) (err error) {
+		log.Info().Msg("starting shutdown export and provider")
 		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 		defer cancel()
 
@@ -96,6 +97,8 @@ func (t *otelProvider) start(exp trace.SpanExporter) (*trace.TracerProvider, uti
 		if err = provider.Shutdown(ctx); err != nil {
 			return err
 		}
+		
+		log.Info().Msg("shutdown export and provider successfully")
 
 		return
 	}
