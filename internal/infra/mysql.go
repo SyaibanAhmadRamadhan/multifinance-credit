@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func NewMysql(dsn string) *sqlx.DB {
+func NewMysql(dsn string) (*sqlx.DB, util.CloseFn) {
 	db, err := sqlx.Connect("mysql", dsn)
 	util.Panic(err)
 
@@ -19,5 +19,15 @@ func NewMysql(dsn string) *sqlx.DB {
 	util.Panic(err)
 
 	log.Info().Msg("initialization mysql successfully")
-	return db
+	return db, func(ctx context.Context) (err error) {
+		log.Info().Msg("starting close mysql db")
+
+		err = db.Close()
+		if err != nil {
+			return err
+		}
+
+		log.Info().Msg("close mysql db successfully")
+		return
+	}
 }
