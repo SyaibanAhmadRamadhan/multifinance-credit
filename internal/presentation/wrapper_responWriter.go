@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/util/primitive"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -85,6 +86,8 @@ func WithOtel(next http.HandlerFunc, opts ...Option) http.HandlerFunc {
 			attribute.String("request.method", request.Method),
 			attribute.String("request.user_agent", request.UserAgent()),
 		))
+		ctx = context.WithValue(ctx, primitive.SpanIDKey, span.SpanContext().SpanID().String())
+		recorder.ResponseWriter.Header().Set("X-Request-ID", span.SpanContext().SpanID().String())
 
 		if recorder.logParams {
 			queryParamToSpan(span, request.URL.Query())
@@ -99,27 +102,28 @@ func WithOtel(next http.HandlerFunc, opts ...Option) http.HandlerFunc {
 		}
 		span.End()
 
-		ctx = context.WithValue(ctx, SpanIDKey, span.SpanContext().SpanID())
 		request = request.WithContext(ctx)
-
 		next.ServeHTTP(recorder, request)
-		duration := time.Since(start).Milliseconds()
+		duration := time.Since(start).Microseconds()
 
-		_, span = otelTracer.Start(request.Context(), fmt.Sprintf("response.body | %d", recorder.status),
+		_, span = otelTracer.Start(request.Context(), fmt.Sprintf("response | %d", recorder.status),
 			trace.WithAttributes(
 				attribute.String("response.status", strconv.Itoa(recorder.status)),
 				attribute.String("response.size", formatSize(recorder.size)),
 				attribute.String("response.duration_ms", strconv.FormatInt(duration, 10)),
 			))
-		if recorder.logRespBody {
-			span.SetAttributes(
-				attribute.String("response.body", recorder.buffer.String()),
-			)
+		if recorder.status == http.StatusOK {
+			if recorder.logRespBody {
+				span.SetAttributes(
+					attribute.String("response.body", recorder.buffer.String()),
+				)
+			}
 		}
-		span.End()
 
+		span.End()
 	}
 }
+
 func queryParamToSpan(span trace.Span, attributes map[string][]string) {
 
 	otelAttributes := make([]attribute.KeyValue, 0, len(attributes))

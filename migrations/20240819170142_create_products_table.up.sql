@@ -4,7 +4,7 @@ CREATE TABLE products
     id          SERIAL PRIMARY KEY,
     merchant_id INTEGER NOT NULL,
     image       VARCHAR(255),
-    name        VARCHAR(255),
+    queryParamBindToStruct        VARCHAR(255),
     qty         INTEGER,
     price       DOUBLE PRECISION,
     CONSTRAINT fk_merchant

@@ -6,6 +6,8 @@ import (
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/conf"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/infra"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/presentation"
+	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/service"
+	"github.com/jonboulle/clockwork"
 	"github.com/rs/zerolog/log"
 	"net/http"
 	"os"
@@ -16,11 +18,18 @@ import (
 func main() {
 	conf.Init()
 
-	infra.NewMinio(conf.GetConfig().Minio)
+	minioClient := infra.NewMinio(conf.GetConfig().Minio)
 	otel := infra.NewOtel(conf.GetConfig().OpenTelemetry)
-	_, dbClose := infra.NewMysql(conf.GetConfig().DatabaseDSN)
+	sqlxDB, dbClose := infra.NewMysql(conf.GetConfig().DatabaseDSN)
+	clockWork := clockwork.NewRealClock()
 
-	server := presentation.New(&presentation.Presenter{})
+	server := presentation.New(&presentation.Presenter{
+		DependencyService: service.NewDependency(service.NewDependencyOpts{
+			MinioClient: minioClient,
+			SqlxDB:      sqlxDB,
+			Clock:       clockWork,
+		}),
+	})
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, os.Kill)
