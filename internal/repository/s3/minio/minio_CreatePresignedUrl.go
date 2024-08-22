@@ -11,7 +11,6 @@ import (
 )
 
 func (r *repository) CreatePresignedUrl(ctx context.Context, input s3.CreatePresignedUrlInput) (output s3.CreatePresignedUrlOutput, err error) {
-	time.Sleep(5 * time.Second)
 	expiredAt := r.clock.Now().UTC().Add(5 * time.Minute)
 
 	ctx, span := r.tracer.Start(ctx, "minio s3 - Create Presigned Url", trace.WithAttributes(

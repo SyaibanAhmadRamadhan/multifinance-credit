@@ -176,8 +176,158 @@ paths:
                 $ref: '#/components/schemas/Error'
       tags:
         - image
+  /v1/bank-account:
+    get:
+      operationId: V1BankAccountsGet
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            format: int64
+          required: true
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            format: int64
+          required: true
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1BankAccountsGetResponseBody'
+        '400':
+          description: BAD_REQUEST
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '500':
+          description: INTERNAL SERVER ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: NOT FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: UNPROCESSABLE ENTITY
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+        - bank-account
+    post:
+      operationId: V1BankAccountsPost
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V1BankAccountsPostRequestBody'
+      responses:
+        '204':
+          description: SUCCESS CREATED BANK ACCOUNTS
+        '400':
+          description: BAD_REQUEST
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '500':
+          description: INTERNAL SERVER ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: NOT FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: UNPROCESSABLE ENTITY
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+        - bank-account
+
 components:
   schemas:
+    V1BankAccountsPostRequestBody:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/V1BankAccountsPostRequestBodyItem'
+          x-oapi-codegen-extra-tags:
+            binding: min=1,dive
+      required:
+        - items
+    V1BankAccountsPostRequestBodyItem:
+      type: object
+      properties:
+        name:
+          type: string
+          x-oapi-codegen-extra-tags:
+            binding: required
+        account_number:
+          type: string
+          x-oapi-codegen-extra-tags:
+            binding: required
+        account_holder_name:
+          type: string
+          x-oapi-codegen-extra-tags:
+            binding: required
+      required:
+        - account_number
+        - name
+        - account_holder_name
+    V1BankAccountsGetResponseBody:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/V1BankAccountsGetResponseBodyItem'
+        pagination:
+            $ref: '#/components/schemas/PaginationResponse'
+      required:
+        - items
+        - pagination
+    V1BankAccountsGetResponseBodyItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        consumer_id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          description: bank name
+        account_number:
+          type: string
+        account_holder_name:
+          type: string
+      required:
+        - id
+        - account_holder_name
+        - account_number
+        - consumer_id
+        - name
     V1RefreshTokenPostResponseBody:
       type: object
       properties:
@@ -258,7 +408,7 @@ components:
         place_of_birth:
           type: string
           x-oapi-codegen-extra-tags:
-            binding: "required,max=255,min=6"
+            binding: "required,max=255"
         photo_ktp:
           $ref: '#/components/schemas/FileUploadRequest'
         photo_selfie:
@@ -301,6 +451,26 @@ components:
         - photo_ktp
         - photo_selfie
         - nik
+    PaginationResponse:
+      type: object
+      properties:
+        page:
+          type: integer
+          format: int64
+        page_size:
+          type: integer
+          format: int64
+        page_count:
+          type: integer
+          format: int64
+        total_data:
+          type: integer
+          format: int64
+      required:
+        - page
+        - page_count
+        - page_size
+        - total_data
     FileUploadRequest:
       type: object
       properties:

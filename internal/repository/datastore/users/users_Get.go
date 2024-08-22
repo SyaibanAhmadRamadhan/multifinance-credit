@@ -25,14 +25,14 @@ func (r *repository) Get(ctx context.Context, input GetInput) (output GetOutput,
 
 	row, err := r.sqlx.QueryRowxContext(ctx, rawQuery, args...)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			err = datastore.ErrRecordNotFound
-		}
 		return output, tracer.Error(err)
 	}
 
 	err = row.StructScan(&output)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = datastore.ErrRecordNotFound
+		}
 		return output, tracer.Error(err)
 	}
 	return
