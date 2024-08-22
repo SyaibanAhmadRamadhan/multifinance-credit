@@ -6,6 +6,7 @@ import (
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/conf"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/db"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/repository/datastore/consumers"
+	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/repository/datastore/limits"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/repository/datastore/users"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/repository/s3"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/service/auth"
@@ -30,10 +31,12 @@ func Test_service_Register(t *testing.T) {
 	mockDBTx := db.NewMockSqlxTransaction(mock)
 	mockUserRepository := users.NewMockRepository(mock)
 	mockConsumerRepository := consumers.NewMockRepository(mock)
+	mockLimitRepository := limits.NewMockRepository(mock)
 
 	s := auth.NewService(auth.NewServiceOpts{
 		UserRepository:     mockUserRepository,
 		ConsumerRepository: mockConsumerRepository,
+		LimitRepository:    mockLimitRepository,
 		S3Repository:       mockS3Repository,
 		DBTx:               mockDBTx,
 	})
@@ -163,6 +166,13 @@ func Test_service_Register(t *testing.T) {
 					Return(consumers.CreateOutput{
 						ID: expectedOutput.ConsumerID,
 					}, nil)
+
+				mockLimitRepository.EXPECT().
+					Creates(ctx, limits.CreatesInput{
+						Transaction: mockSqlxWrapper,
+						ConsumerID:  expectedOutput.ConsumerID,
+						Items:       limits.DefaultLimitData(),
+					}).Return(nil)
 
 				return fn(mockSqlxWrapper)
 			},

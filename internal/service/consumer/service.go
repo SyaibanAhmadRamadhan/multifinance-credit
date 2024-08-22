@@ -8,10 +8,10 @@ import (
 )
 
 type service struct {
-	UserRepository     users.Repository
-	ConsumerRepository consumers.Repository
-	S3Repository       s3.Repository
-	DBTx               db.SqlxTransaction
+	userRepository     users.Repository
+	consumerRepository consumers.Repository
+	s3Repository       s3.Repository
+	dbTx               db.SqlxTransaction
 }
 
 var _ Service = (*service)(nil)
@@ -27,9 +27,9 @@ func NewService(
 	opts NewServiceOpts,
 ) *service {
 	return &service{
-		UserRepository:     opts.UserRepository,
-		ConsumerRepository: opts.ConsumerRepository,
-		S3Repository:       opts.S3Repository,
-		DBTx:               opts.DBTx,
+		userRepository:     opts.UserRepository,
+		consumerRepository: opts.ConsumerRepository,
+		s3Repository:       opts.S3Repository,
+		dbTx:               opts.DBTx,
 	}
 }

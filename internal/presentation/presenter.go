@@ -55,6 +55,12 @@ func handler(presenter *Presenter, r *chi.Mux) {
 			restApi.V1ImagePrivateGet,
 			WithLogResponseBody(false)),
 		)
+		r.Post("/api/v1/bank-account", withOtel(
+			restApi.V1BankAccountsPost,
+		))
+		r.Get("/api/v1/bank-account", withOtel(
+			restApi.V1BankAccountsGet,
+		))
 	})
 
 	r.Post("/api/v1/register", withOtel(

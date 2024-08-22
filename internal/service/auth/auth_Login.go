@@ -14,7 +14,7 @@ import (
 )
 
 func (s *service) Login(ctx context.Context, input LoginInput) (output LoginOutput, err error) {
-	userOutput, err := s.UserRepository.Get(ctx, users.GetInput{
+	userOutput, err := s.userRepository.Get(ctx, users.GetInput{
 		Email: null.StringFrom(input.Email),
 	})
 	if err != nil {

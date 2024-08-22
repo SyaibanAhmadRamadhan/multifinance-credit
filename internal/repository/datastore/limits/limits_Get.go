@@ -1,4 +1,4 @@
-package users
+package limits
 
 import (
 	"context"
@@ -10,10 +10,9 @@ import (
 )
 
 func (r *repository) Get(ctx context.Context, input GetInput) (output GetOutput, err error) {
-	query := r.sq.Select("id", "email", "password").From("users")
-	if input.Email.Valid {
-		query = query.Where(squirrel.Eq{"email": input.Email.String})
-	}
+	query := r.sq.Select("id", "consumer_id", "tenor", "amount").
+		From("limits")
+	
 	if input.ID.Valid {
 		query = query.Where(squirrel.Eq{"id": input.ID.Int64})
 	}
@@ -31,7 +30,7 @@ func (r *repository) Get(ctx context.Context, input GetInput) (output GetOutput,
 	err = row.StructScan(&output)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			err = datastore.ErrRecordNotFound
+			err = errors.Join(err, datastore.ErrRecordNotFound)
 		}
 		return output, tracer.Error(err)
 	}
