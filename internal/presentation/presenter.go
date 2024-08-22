@@ -3,6 +3,7 @@ package presentation
 import (
 	"fmt"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/conf"
+	middlewarecustom "github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/presentation/middleware"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/presentation/restapi"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/service"
 	"github.com/go-chi/chi/v5"
@@ -45,6 +46,31 @@ func New(presenter *Presenter) *http.Server {
 
 func handler(presenter *Presenter, r *chi.Mux) {
 	restApi := restapi.New(presenter.DependencyService)
-	r.Post("/api/v1/register", WithOtel(restApi.Register, WithLogRequestBody(false)))
-	r.Get("/api/v1/image-display", WithOtel(restApi.ImageDisplay, WithLogResponseBody(false)))
+	middlewareCustom := middlewarecustom.NewMiddleware(presenter.DependencyService.AuthService)
+	r.Use(middlewareCustom.StartingOtelTrace)
+
+	r.Group(func(r chi.Router) {
+		r.Use(middlewareCustom.AuthUser)
+		r.Get("/api/v1/image-private", withOtel(
+			restApi.V1ImagePrivateGet,
+			WithLogResponseBody(false)),
+		)
+	})
+
+	r.Post("/api/v1/register", withOtel(
+		restApi.V1RegisterPost,
+		WithLogRequestBody(false)),
+	)
+
+	r.Post("/api/v1/login", withOtel(
+		restApi.V1LoginPost,
+		WithLogResponseBody(false),
+		WithLogRequestBody(false)),
+	)
+
+	r.Post("/api/v1/refresh-token", withOtel(
+		restApi.V1RefreshTokenPost,
+		WithLogResponseBody(false),
+		WithLogRequestBody(false)),
+	)
 }

@@ -29,7 +29,7 @@ func (s *sqlxTransaction) DoTransaction(ctx context.Context, opt *sql.TxOptions,
 		trace.WithAttributes(attribute.Bool("sqlx.readonly", opt.ReadOnly)),
 	}
 
-	spanName := "Begin Tx"
+	spanName := "sqlx: Begin Tx"
 
 	ctx, span := s.tracer.Start(ctx, spanName, opts...)
 	defer span.End()

@@ -6,6 +6,83 @@ info:
 servers:
   - url: http://localhost:3001/api
 paths:
+  /v1/refresh-token:
+    post:
+      operationId: V1RefreshTokenPost
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1RefreshTokenPostResponseBody'
+        '400':
+          description: BAD_REQUEST
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '422':
+          description: UNPROCESSABLE ENTITY
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: INTERNAL SERVER ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: NOT FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+        - auth
+  /v1/login:
+    post:
+      operationId: V1LoginPost
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V1LoginPostRequestBody'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1LoginPostResponseBody'
+        '400':
+          description: BAD_REQUEST
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '422':
+          description: UNPROCESSABLE ENTITY
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: INTERNAL SERVER ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: NOT FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+        - auth
   /v1/register:
     post:
       operationId: V1RegisterPost
@@ -39,31 +116,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '422':
+          description: UNPROCESSABLE ENTITY
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       tags:
         - auth
-  /v1/image-display:
+  /v1/image-private:
     get:
       summary: Display an image
-      operationId: V1ImageDisplay
+      operationId: V1ImagePrivate
       description: Returns a private image (e.g., KTP image) based on the provided parameters.
       parameters:
-        - name: consumer_id
-          in: query
-          description: ID of the consumer
-          schema:
-            type: integer
-            example: 5
-            format: int64
-        - name: user_id
-          in: query
-          description: ID of the user
-          required: true
-          x-oapi-codegen-extra-tags:
-            binding: "required"
-          schema:
-            type: integer
-            example: 123
-            format: int64
         - name: image_ktp
           in: query
           description: Flag to indicate if the KTP image should be retrieved
@@ -102,10 +168,64 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '422':
+          description: UNPROCESSABLE ENTITY
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       tags:
         - image
 components:
   schemas:
+    V1RefreshTokenPostResponseBody:
+      type: object
+      properties:
+        access_token:
+          $ref: '#/components/schemas/V1TokenJwtResponse'
+      required:
+        - access_token
+    V1LoginPostRequestBody:
+      type: object
+      properties:
+        email:
+          type: string
+          x-oapi-codegen-extra-tags:
+            binding: "required,min=6,email"
+        password:
+          type: string
+          x-oapi-codegen-extra-tags:
+            binding: "required"
+      required:
+        - email
+        - password
+    V1LoginPostResponseBody:
+      type: object
+      properties:
+        access_token:
+          $ref: '#/components/schemas/V1TokenJwtResponse'
+        user_id:
+          type: integer
+          format: int64
+        email:
+          type: string
+      required:
+        - email
+        - access_token
+        - refresh_token
+        - user_id
+    V1TokenJwtResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        expired_at:
+          type: string
+          format: date-time
+          description: format time utc and RFC3339
+      required:
+        - expired_at
+        - token
     V1RegisterPost200Response:
       type: object
       properties:

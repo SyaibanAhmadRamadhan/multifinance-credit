@@ -31,4 +31,22 @@ type LoginInput struct {
 }
 
 type LoginOutput struct {
+	AccessToken  LoginOutputToken
+	RefreshToken LoginOutputToken
+	UserID       int64
+	Email        string
+}
+
+type LoginOutputToken struct {
+	ExpiredAt time.Time
+	Token     string
+}
+
+type VerifyTokenInput struct {
+	Token     string
+	TokenType primitive.TokenType
+}
+
+type VerifyTokenOutput struct {
+	UserID int64
 }

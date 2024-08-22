@@ -37,7 +37,10 @@ func (s *service) GetPrivateImage(ctx context.Context, input GetPrivateImageInpu
 		ObjectName: objectName,
 	})
 	if err != nil {
-		return output, err
+		if errors.Is(err, s3.ErrIsBadRequest) {
+			err = errors.Join(err, ErrImageNotFound)
+		}
+		return output, tracer.Error(err)
 	}
 
 	output = GetPrivateImageOutput{

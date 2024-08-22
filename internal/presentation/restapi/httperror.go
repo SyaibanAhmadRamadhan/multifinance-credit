@@ -27,6 +27,7 @@ func Error(w http.ResponseWriter, r *http.Request, code int, err error, msg ...s
 	ctx, span := otel.Tracer("error").Start(r.Context(), "error record")
 	defer span.End()
 	span.SetAttributes(attribute.String("error-from-server", err.Error()))
+	span.SetAttributes(attribute.Int("http-code", code))
 
 	r = r.WithContext(ctx)
 	w.Header().Set("Content-Type", "application/json")

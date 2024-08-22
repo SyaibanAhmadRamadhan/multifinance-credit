@@ -79,9 +79,9 @@ func Test_restApi_Register(t *testing.T) {
 		require.NoError(t, err)
 
 		r := chi.NewRouter()
-		r.Get("/api/v1/register", h.Register)
+		r.Post("/api/v1/register", h.V1RegisterPost)
 
-		req, err := http.NewRequest("GET", "/api/v1/register", io.NopCloser(bytes.NewBuffer(expectedReqBodyByte)))
+		req, err := http.NewRequest("POST", "/api/v1/register", io.NopCloser(bytes.NewBuffer(expectedReqBodyByte)))
 		assert.NoError(t, err)
 
 		mockAuthService.EXPECT().
@@ -116,7 +116,7 @@ func Test_restApi_Register(t *testing.T) {
 			Return(expectedRegisterAuthOutput, nil)
 
 		rr := httptest.NewRecorder()
-		h.Register(rr, req)
+		h.V1RegisterPost(rr, req)
 		assert.Equal(t, http.StatusOK, rr.Code)
 
 		expectedResponse := api.V1RegisterPost200Response{
@@ -171,7 +171,7 @@ func Test_restApi_Register(t *testing.T) {
 		require.NoError(t, err)
 
 		r := chi.NewRouter()
-		r.Get("/api/v1/register", h.Register)
+		r.Get("/api/v1/register", h.V1RegisterPost)
 
 		req, err := http.NewRequest("GET", "/api/v1/register", io.NopCloser(bytes.NewBuffer(expectedReqBodyByte)))
 		assert.NoError(t, err)
@@ -208,7 +208,7 @@ func Test_restApi_Register(t *testing.T) {
 			Return(auth.RegisterOutput{}, auth.ErrNikIsAvailable)
 
 		rr := httptest.NewRecorder()
-		h.Register(rr, req)
+		h.V1RegisterPost(rr, req)
 		assert.Equal(t, http.StatusBadRequest, rr.Code)
 
 		expectedResponse := api.Error{
@@ -250,7 +250,7 @@ func Test_restApi_Register(t *testing.T) {
 		require.NoError(t, err)
 
 		r := chi.NewRouter()
-		r.Get("/api/v1/register", h.Register)
+		r.Get("/api/v1/register", h.V1RegisterPost)
 
 		req, err := http.NewRequest("GET", "/api/v1/register", io.NopCloser(bytes.NewBuffer(expectedReqBodyByte)))
 		assert.NoError(t, err)
@@ -287,7 +287,7 @@ func Test_restApi_Register(t *testing.T) {
 			Return(auth.RegisterOutput{}, auth.ErrEmailIsAvailable)
 
 		rr := httptest.NewRecorder()
-		h.Register(rr, req)
+		h.V1RegisterPost(rr, req)
 		assert.Equal(t, http.StatusBadRequest, rr.Code)
 
 		expectedResponse := api.Error{

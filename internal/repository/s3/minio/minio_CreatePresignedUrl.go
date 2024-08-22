@@ -14,11 +14,11 @@ func (r *repository) CreatePresignedUrl(ctx context.Context, input s3.CreatePres
 	time.Sleep(5 * time.Second)
 	expiredAt := r.clock.Now().UTC().Add(5 * time.Minute)
 
-	ctx, span := r.tracer.Start(ctx, "minio - CreatePresignedUrl", trace.WithAttributes(
-		attribute.String("bucket-name", input.BucketName),
-		attribute.String("path-name", input.Path),
+	ctx, span := r.tracer.Start(ctx, "minio s3 - Create Presigned Url", trace.WithAttributes(
+		attribute.String("bucket_name", input.BucketName),
+		attribute.String("path_name", input.Path),
 		attribute.String("expired", expiredAt.Format(time.DateTime)),
-		attribute.String("mime-type", input.MimeType),
+		attribute.String("mime_type", input.MimeType),
 	))
 	defer span.End()
 

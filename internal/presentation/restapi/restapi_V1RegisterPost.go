@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func (h *restApi) Register(w http.ResponseWriter, r *http.Request) {
+func (h *restApi) V1RegisterPost(w http.ResponseWriter, r *http.Request) {
 
 	req := api.V1RegisterPostRequestBody{}
 

@@ -2,10 +2,9 @@ package presentation
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/util/primitive"
+	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/presentation/restapi"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -66,7 +65,7 @@ func (rw *ResponseWriter) Write(body []byte) (int, error) {
 	return size, err
 }
 
-func WithOtel(next http.HandlerFunc, opts ...Option) http.HandlerFunc {
+func withOtel(next http.HandlerFunc, opts ...Option) http.HandlerFunc {
 
 	return func(writer http.ResponseWriter, request *http.Request) {
 		start := time.Now().UTC()
@@ -82,31 +81,22 @@ func WithOtel(next http.HandlerFunc, opts ...Option) http.HandlerFunc {
 			opt(recorder)
 		}
 
-		ctx, span := otelTracer.Start(request.Context(), request.URL.Host+request.URL.Path, trace.WithAttributes(
-			attribute.String("request.method", request.Method),
-			attribute.String("request.user_agent", request.UserAgent()),
-		))
-		ctx = context.WithValue(ctx, primitive.SpanIDKey, span.SpanContext().SpanID().String())
-		recorder.ResponseWriter.Header().Set("X-Request-ID", span.SpanContext().SpanID().String())
-
 		if recorder.logParams {
-			queryParamToSpan(span, request.URL.Query())
+			request = queryParamToSpan(request, request.URL.Query())
 		}
 
 		if recorder.logReqBody && (request.Method == http.MethodPost || request.Method == http.MethodPut) {
 			var err error
-			err = addRequestBodyToSpan(span, request)
+			request, err = addRequestBodyToSpan(request)
 			if err != nil {
-				span.RecordError(err)
+				restapi.Error(recorder, request, http.StatusInternalServerError, err)
 			}
 		}
-		span.End()
 
-		request = request.WithContext(ctx)
 		next.ServeHTTP(recorder, request)
 		duration := time.Since(start).Microseconds()
 
-		_, span = otelTracer.Start(request.Context(), fmt.Sprintf("response | %d", recorder.status),
+		_, span := otelTracer.Start(request.Context(), fmt.Sprintf("response body"),
 			trace.WithAttributes(
 				attribute.String("response.status", strconv.Itoa(recorder.status)),
 				attribute.String("response.size", formatSize(recorder.size)),
@@ -124,7 +114,10 @@ func WithOtel(next http.HandlerFunc, opts ...Option) http.HandlerFunc {
 	}
 }
 
-func queryParamToSpan(span trace.Span, attributes map[string][]string) {
+func queryParamToSpan(r *http.Request, attributes map[string][]string) *http.Request {
+	ctx, span := otelTracer.Start(r.Context(), "query parameter")
+	r = r.WithContext(ctx)
+	defer span.End()
 
 	otelAttributes := make([]attribute.KeyValue, 0, len(attributes))
 	for key, values := range attributes {
@@ -134,36 +127,41 @@ func queryParamToSpan(span trace.Span, attributes map[string][]string) {
 	}
 
 	span.SetAttributes(otelAttributes...)
+
+	return r
 }
 
-func addRequestBodyToSpan(span trace.Span, request *http.Request) error {
+func addRequestBodyToSpan(r *http.Request) (*http.Request, error) {
+	ctx, span := otelTracer.Start(r.Context(), "request body")
+	r = r.WithContext(ctx)
+	defer span.End()
 
-	body, err := io.ReadAll(request.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		return err
+		return r, err
 	}
 	defer func() {
-		err = request.Body.Close()
-		if err != nil {
+		errReqBody := r.Body.Close()
+		if errReqBody != nil {
 			span.RecordError(err)
 		}
 	}()
 
 	var requestBody map[string]any
-	if err := json.Unmarshal(body, &requestBody); err != nil {
-		return err
+	if err = json.Unmarshal(body, &requestBody); err != nil {
+		return r, err
 	}
 
-	request.Body = io.NopCloser(bytes.NewBuffer(body))
+	r.Body = io.NopCloser(bytes.NewBuffer(body))
 
 	jsonString, err := json.Marshal(requestBody)
 	if err != nil {
-		return err
+		return r, err
 	}
 
 	span.SetAttributes(attribute.String("request.body.json", string(jsonString)))
 
-	return nil
+	return r, nil
 }
 
 func formatSize(size int) string {
