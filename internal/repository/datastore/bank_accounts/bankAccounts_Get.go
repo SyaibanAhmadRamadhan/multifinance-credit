@@ -1,4 +1,4 @@
-package consumers
+package bank_accounts
 
 import (
 	"context"
@@ -10,10 +10,11 @@ import (
 )
 
 func (r *repository) Get(ctx context.Context, input GetInput) (output GetOutput, err error) {
-	query := r.sq.Select("id", "user_id", "nik", "full_name", "legal_name", "place_of_birth", "date_of_birth",
-		"salary", "photo_ktp", "photo_selfie").From("consumers")
-	if input.UserID.Valid {
-		query = query.Where(squirrel.Eq{"user_id": input.UserID.Int64})
+	query := r.sq.Select("id", "consumer_id", "name", "account_number", "account_holder_name").
+		From("bank_accounts")
+
+	if input.AccountNumber.Valid {
+		query = query.Where(squirrel.Eq{"account_number": input.AccountNumber.String})
 	}
 	if input.ID.Valid {
 		query = query.Where(squirrel.Eq{"id": input.ID.Int64})
@@ -32,10 +33,9 @@ func (r *repository) Get(ctx context.Context, input GetInput) (output GetOutput,
 	err = row.StructScan(&output)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			err = datastore.ErrRecordNotFound
+			err = errors.Join(err, datastore.ErrRecordNotFound)
 		}
 		return output, tracer.Error(err)
 	}
-
 	return
 }

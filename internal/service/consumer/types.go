@@ -15,3 +15,15 @@ type GetPrivateImageInput struct {
 type GetPrivateImageOutput struct {
 	Object io.ReadCloser
 }
+
+type GetInput struct {
+	UserID     null.Int
+	ConsumerID null.Int
+}
+
+type GetOutput struct {
+	ID        int64
+	UserID    int64
+	FullName  string
+	LegalName string
+}

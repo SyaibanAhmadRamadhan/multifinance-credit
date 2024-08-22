@@ -6,6 +6,7 @@ import (
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/conf"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/db"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/repository/datastore/consumers"
+	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/repository/datastore/limits"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/repository/datastore/users"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/repository/s3"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/util/primitive"
@@ -24,7 +25,7 @@ func (s *service) Register(ctx context.Context, input RegisterInput) (output Reg
 
 	var erg errgroup.Group
 	erg.Go(func() (err error) {
-		presignedUrlOutputs, err := s.S3Repository.CreatePresignedUrl(ctx, s3.CreatePresignedUrlInput{
+		presignedUrlOutputs, err := s.s3Repository.CreatePresignedUrl(ctx, s3.CreatePresignedUrlInput{
 			BucketName: conf.GetConfig().Minio.PrivateBucket,
 			Path:       input.PhotoKtp.GeneratedFileName,
 			MimeType:   string(input.PhotoKtp.MimeType),
@@ -45,7 +46,7 @@ func (s *service) Register(ctx context.Context, input RegisterInput) (output Reg
 	})
 
 	erg.Go(func() (err error) {
-		presignedUrlOutputs, err := s.S3Repository.CreatePresignedUrl(ctx, s3.CreatePresignedUrlInput{
+		presignedUrlOutputs, err := s.s3Repository.CreatePresignedUrl(ctx, s3.CreatePresignedUrlInput{
 			BucketName: conf.GetConfig().Minio.PrivateBucket,
 			Path:       input.PhotoSelfie.GeneratedFileName,
 			MimeType:   string(input.PhotoSelfie.MimeType),
@@ -74,9 +75,9 @@ func (s *service) Register(ctx context.Context, input RegisterInput) (output Reg
 		return output, tracer.Error(err)
 	}
 
-	err = s.DBTx.DoTransaction(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted, ReadOnly: false},
+	err = s.dbTx.DoTransaction(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted, ReadOnly: false},
 		func(tx *db.SqlxWrapper) (err error) {
-			createUserOutput, err := s.UserRepository.Create(ctx, users.CreateInput{
+			createUserOutput, err := s.userRepository.Create(ctx, users.CreateInput{
 				Transaction: tx,
 				Email:       input.Email,
 				Password:    string(passwordHash),
@@ -85,7 +86,7 @@ func (s *service) Register(ctx context.Context, input RegisterInput) (output Reg
 				return tracer.Error(err)
 			}
 
-			createConsumerOutput, err := s.ConsumerRepository.Create(ctx, consumers.CreateInput{
+			createConsumerOutput, err := s.consumerRepository.Create(ctx, consumers.CreateInput{
 				Transaction:  tx,
 				UserID:       createUserOutput.ID,
 				Nik:          input.Nik,
@@ -96,6 +97,15 @@ func (s *service) Register(ctx context.Context, input RegisterInput) (output Reg
 				Salary:       input.Salary,
 				PhotoKTP:     input.PhotoKtp.GeneratedFileName,
 				PhotoSelfie:  input.PhotoSelfie.GeneratedFileName,
+			})
+			if err != nil {
+				return tracer.Error(err)
+			}
+
+			err = s.limitRepository.Creates(ctx, limits.CreatesInput{
+				Transaction: tx,
+				ConsumerID:  createConsumerOutput.ID,
+				Items:       limits.DefaultLimitData(),
 			})
 			if err != nil {
 				return tracer.Error(err)
@@ -117,7 +127,7 @@ func (s *service) registerValidateInput(ctx context.Context, input RegisterInput
 	var erg errgroup.Group
 
 	erg.Go(func() (err error) {
-		outputExisting, err := s.ConsumerRepository.CheckExisting(ctx, consumers.CheckExistingInput{
+		outputExisting, err := s.consumerRepository.CheckExisting(ctx, consumers.CheckExistingInput{
 			ByNIK: null.StringFrom(input.Nik),
 		})
 		if err != nil {
@@ -131,7 +141,7 @@ func (s *service) registerValidateInput(ctx context.Context, input RegisterInput
 	})
 
 	erg.Go(func() (err error) {
-		outputExisting, err := s.UserRepository.CheckExisting(ctx, users.CheckExistingInput{
+		outputExisting, err := s.userRepository.CheckExisting(ctx, users.CheckExistingInput{
 			ByEmail: null.StringFrom(input.Email),
 		})
 		if err != nil {

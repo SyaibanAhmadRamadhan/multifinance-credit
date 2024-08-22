@@ -6,7 +6,9 @@ import (
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/generated/api"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/service"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/service/auth"
+	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/service/bank_account"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/service/consumer"
+	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/util/pagination"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/util/primitive"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/schema"
@@ -16,9 +18,10 @@ import (
 )
 
 type restApi struct {
-	validator       *validator.Validate
-	authService     auth.Service
-	consumerService consumer.Service
+	validator          *validator.Validate
+	authService        auth.Service
+	consumerService    consumer.Service
+	bankAccountService bank_account.Service
 }
 
 func New(dependency *service.Dependency) *restApi {
@@ -29,9 +32,10 @@ func New(dependency *service.Dependency) *restApi {
 	})
 
 	return &restApi{
-		validator:       v,
-		authService:     dependency.AuthService,
-		consumerService: dependency.ConsumerService,
+		validator:          v,
+		authService:        dependency.AuthService,
+		consumerService:    dependency.ConsumerService,
+		bankAccountService: dependency.BankAccountService,
 	}
 }
 
@@ -136,4 +140,27 @@ func (h *restApi) getUserID(w http.ResponseWriter, r *http.Request) (int64, bool
 	}
 
 	return userID, true
+}
+
+func (h *restApi) bindToPaginationInput(page int64, pageSize int64) pagination.PaginationInput {
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 || pageSize > 20 {
+		pageSize = 20
+	}
+
+	return pagination.PaginationInput{
+		Page:     page,
+		PageSize: pageSize,
+	}
+}
+
+func (h *restApi) bindToPaginationResponse(input pagination.PaginationOutput) api.PaginationResponse {
+	return api.PaginationResponse{
+		Page:      input.Page,
+		PageCount: input.PageCount,
+		PageSize:  input.PageSize,
+		TotalData: input.TotalData,
+	}
 }

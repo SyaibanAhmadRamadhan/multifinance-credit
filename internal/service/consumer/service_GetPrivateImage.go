@@ -11,7 +11,7 @@ import (
 )
 
 func (s *service) GetPrivateImage(ctx context.Context, input GetPrivateImageInput) (output GetPrivateImageOutput, err error) {
-	userOutput, err := s.ConsumerRepository.Get(ctx, consumers.GetInput{
+	userOutput, err := s.consumerRepository.Get(ctx, consumers.GetInput{
 		ID:     input.ConsumerID,
 		UserID: null.IntFrom(input.UserID),
 	})
@@ -33,7 +33,7 @@ func (s *service) GetPrivateImage(ctx context.Context, input GetPrivateImageInpu
 		return
 	}
 
-	privateObjectOutput, err := s.S3Repository.GetPrivateObject(ctx, s3.GetPrivateObjectInput{
+	privateObjectOutput, err := s.s3Repository.GetPrivateObject(ctx, s3.GetPrivateObjectInput{
 		ObjectName: objectName,
 	})
 	if err != nil {
