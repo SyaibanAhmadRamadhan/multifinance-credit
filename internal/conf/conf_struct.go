@@ -1,6 +1,6 @@
 package conf
 
-type config struct {
+type Config struct {
 	AppPort       int                 `mapstructure:"APP_PORT"`
 	AppMode       string              `mapstructure:"APP_MODE"`
 	OpenTelemetry ConfigOpenTelemetry `mapstructure:"OPEN_TELEMETRY"`

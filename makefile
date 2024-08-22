@@ -10,6 +10,7 @@ install:
 	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.14
 	go install go.uber.org/mock/mockgen@v0.3.0
 	go install -tags 'mysql' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.16.2
+	npm install -g @redocly/cli@1.9.1
 
 # Generates mocks for interfaces
 INTERFACES_GO_FILES := $(shell find internal -name "interfaces.go")
@@ -23,7 +24,6 @@ $(INTERFACES_GEN_GO_FILES): %.mock.gen.go: %.go
 generate: api/api.yml generate_mocks
 	mkdir -p generated/api
 	oapi-codegen --package api -generate types $< > generated/api/api-types.gen.go
-
 create:
 	@$(MIGRATE_CMD) create -ext sql -dir $(MIGRATE_DIR) $(NAME)
 
@@ -51,7 +51,7 @@ stop-infra:
 	docker compose -f deployment/docker-compose.yml stop
 
 test:
-	go test -tags test -short -failfast ./...
+	go test -tags test -short -failfast -coverprofile coverage.out ./...
 
 init: starting-infra \
 	install \
@@ -60,3 +60,13 @@ init: starting-infra \
 
 run:
 	air -c air.toml
+
+clean:
+	rm -rf dist/* generated build vendor
+	find . -name "*.mock.gen.go" -type f -delete
+	find . -name "*.out" -type f -delete
+	find . -name "wire_gen.go" -type f -delete
+	find . -name "*.mock.gen.go" -type f -delete
+
+preview_open_api:
+	redocly preview-docs api/api.yml

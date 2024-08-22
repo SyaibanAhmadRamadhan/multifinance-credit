@@ -5,7 +5,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var conf *config
+var conf *Config
 
 func Init() {
 	listDir := []string{".", "../", "../../", "../../../", "../../../../"}
@@ -32,6 +32,6 @@ func Init() {
 	panic("cannot load env")
 }
 
-func GetConfig() *config {
+func GetConfig() *Config {
 	return conf
 }

@@ -6,7 +6,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type SqlxTransactionInterface interface {
+type SqlxTransaction interface {
 	DoTransaction(ctx context.Context, opt *sql.TxOptions, fn func(tx *SqlxWrapper) error) error
 }
 

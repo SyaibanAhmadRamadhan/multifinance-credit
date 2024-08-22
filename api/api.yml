@@ -1,49 +1,11 @@
 openapi: 3.0.1
 info:
-  contact: {}
+  contact: { }
   title: multifinance credit api
   version: 1.0.0
 servers:
-  - url: http://localhost:3001
+  - url: http://localhost:3001/api
 paths:
-  /v1/profile/{id}:
-    get:
-      operationId: V1GetProfile
-      parameters:
-        - name: id
-          in: path
-          description: params user id
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/V1GetProfile200Response'
-        '400':
-          description: BAD_REQUEST
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error400'
-        '500':
-          description: INTERNAL SERVER ERROR
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: NOT FOUND
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      tags:
-        - profile
   /v1/register:
     post:
       operationId: V1RegisterPost
@@ -78,76 +40,195 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       tags:
-        - register
+        - auth
+  /v1/image-display:
+    get:
+      summary: Display an image
+      operationId: V1ImageDisplay
+      description: Returns a private image (e.g., KTP image) based on the provided parameters.
+      parameters:
+        - name: consumer_id
+          in: query
+          description: ID of the consumer
+          schema:
+            type: integer
+            example: 5
+            format: int64
+        - name: user_id
+          in: query
+          description: ID of the user
+          required: true
+          x-oapi-codegen-extra-tags:
+            binding: "required"
+          schema:
+            type: integer
+            example: 123
+            format: int64
+        - name: image_ktp
+          in: query
+          description: Flag to indicate if the KTP image should be retrieved
+          schema:
+            type: boolean
+            example: true
+        - name: image_selfie
+          in: query
+          description: Flag to indicate if the selfie image should be retrieved
+          schema:
+            type: boolean
+            example: false
+      responses:
+        '200':
+          description: OK - Image retrieved successfully
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: BAD_REQUEST
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '500':
+          description: INTERNAL SERVER ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: NOT FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+        - image
 components:
   schemas:
     V1RegisterPost200Response:
       type: object
       properties:
-        id:
+        user_id:
           type: integer
           format: int64
+        consumer_id:
+          type: integer
+          format: int64
+        upload_photo_ktp:
+          $ref: '#/components/schemas/FileUploadResponse'
+        upload_photo_selfie:
+          $ref: '#/components/schemas/FileUploadResponse'
       required:
-        - id
+        - user_id
+        - consumer_id
+        - upload_photo_ktp
+        - upload_photo_selfie
     V1RegisterPostRequestBody:
       type: object
       properties:
-        username:
+        full_name:
           type: string
           x-oapi-codegen-extra-tags:
-            validate: "required,max=255,min=6"
+            binding: "required,max=255,min=6"
+        legal_name:
+          type: string
+          x-oapi-codegen-extra-tags:
+            binding: "required,max=255,min=6"
+        place_of_birth:
+          type: string
+          x-oapi-codegen-extra-tags:
+            binding: "required,max=255,min=6"
+        photo_ktp:
+          $ref: '#/components/schemas/FileUploadRequest'
+        photo_selfie:
+          $ref: '#/components/schemas/FileUploadRequest'
+        date_of_birth:
+          type: string
+          format: date-time
+          x-oapi-codegen-extra-tags:
+            binding: "required"
+        salary:
+          type: number
+          format: double
+          x-oapi-codegen-extra-tags:
+            binding: "required"
         email:
           type: string
           x-oapi-codegen-extra-tags:
-            validate: "required,max=255,min=6,email"
+            binding: "required,max=255,min=6,email"
         password:
           type: string
           x-oapi-codegen-extra-tags:
-            validate: "required,max=50,min=6"
+            binding: "required,max=50,min=6"
         re_password:
           type: string
           x-oapi-codegen-extra-tags:
-            validate: "required,eqfield=Password"
-        first_name:
+            binding: "required,eqfield=Password"
+        nik:
           type: string
           x-oapi-codegen-extra-tags:
-            validate: "required,max=20,min=6"
-        last_name:
-          x-oapi-codegen-extra-tags:
-            validate: "required,max=10,min=6"
+            binding: "required"
       required:
         - email
-        - first_name
-        - last_name
         - password
         - re_password
-        - username
-    V1GetProfile200Response:
+        - full_name
+        - legal_name
+        - date_of_birth
+        - place_of_birth
+        - salary
+        - photo_ktp
+        - photo_selfie
+        - nik
+    FileUploadRequest:
       type: object
       properties:
-        id:
+        checksum_sha256:
+          type: string
+          description: sha256 checksum file
+        identifier:
+          type: string
+          description: identifier
+        mime_type:
+          type: string
+          description: 'common mime type: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types'
+        original_filename:
+          type: string
+          description: original filename
+        size:
           type: integer
           format: int64
-        username:
-          type: string
-        first_name:
-          type: string
-        last_name:
-          type: string
-        email:
-          type: string
+          description: sizes in bytes
       required:
-        - id
-        - name
-        - username
-        - last_name
-        - first_name
-        - email
+        - checksum_sha256
+        - identifier
+        - mime_type
+        - original_filename
+        - size
+    FileUploadResponse:
+      type: object
+      properties:
+        identifier:
+          type: string
+          description: identifier response from request
+        upload_expired_at:
+          type: string
+          format: date-time
+        upload_url:
+          type: string
+        minio_form_data:
+          type: object
+          additionalProperties:
+            type: string
+      required:
+        - identifier
+        - upload_expired_at
+        - upload_url
+        - minio_form_data
     Error400:
       type: object
       properties:
-        request_id:
-          type: string
         errors:
           type: object
           additionalProperties:
@@ -156,15 +237,11 @@ components:
               type: string
       required:
         - errors
-        - request_id
     Error:
       type: object
       properties:
-        request_id:
-          type: string
         message:
           type: string
       required:
         - message
-        - request_id
 
