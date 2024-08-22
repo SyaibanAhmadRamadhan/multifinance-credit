@@ -10,6 +10,9 @@ import (
 	miniogo "github.com/minio/minio-go/v7"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
+	"io"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
@@ -18,21 +21,33 @@ func Test_repository_GetPrivateObject(t *testing.T) {
 	defer mock.Finish()
 	conf.Init()
 	ctx := context.Background()
-	mockClientMinio := minio.NewMockminioClient(mock)
 	mockClockWork := clockwork.NewFakeClock()
 
-	m := minio.NewRepository(mockClientMinio, mockClockWork)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Last-Modified", "Wed, 21 Oct 2015 07:28:00 GMT")
+		w.Header().Set("Content-Length", "5")
+
+		w.Write([]byte("12345"))
+	}))
+	defer srv.Close()
+
+	clnt, err := miniogo.New(srv.Listener.Addr().String(), &miniogo.Options{
+		Region: "us-east-1",
+	})
+	require.NoError(t, err)
+
+	m := minio.NewRepository(clnt, mockClockWork)
 
 	t.Run("should return correct object", func(t *testing.T) {
 		expectedInput := s3.GetPrivateObjectInput{
 			ObjectName: faker.Name(),
 		}
 
-		mockClientMinio.EXPECT().
-			GetObject(gomock.Any(), "private", expectedInput.ObjectName, miniogo.GetObjectOptions{}).
-			Return(nil, nil)
-
-		_, err := m.GetPrivateObject(ctx, expectedInput)
+		output, err := m.GetPrivateObject(ctx, expectedInput)
 		require.NoError(t, err)
+
+		buf, err := io.ReadAll(output.Object)
+		require.NoError(t, err)
+		require.Equal(t, "12345", string(buf))
 	})
 }

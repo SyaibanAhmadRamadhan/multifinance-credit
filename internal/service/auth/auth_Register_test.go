@@ -27,7 +27,7 @@ func Test_service_Register(t *testing.T) {
 	conf.Init()
 
 	mockS3Repository := s3.NewMockRepository(mock)
-	mockDBTx := db.NewMockSqlxTransactionInterface(mock)
+	mockDBTx := db.NewMockSqlxTransaction(mock)
 	mockUserRepository := users.NewMockRepository(mock)
 	mockConsumerRepository := consumers.NewMockRepository(mock)
 

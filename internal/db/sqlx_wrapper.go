@@ -17,8 +17,8 @@ import (
 const TracerName = "db"
 const InstrumentVersion = "v1.0.0"
 const (
-	DBStatement = attribute.Key("db.statement")
-	Args        = attribute.Key("sqlx.args")
+	DBStatement = attribute.Key("db_statement")
+	Args        = attribute.Key("db_args")
 )
 
 func recordError(span trace.Span, err error) {
@@ -60,7 +60,7 @@ func (s *SqlxWrapper) QueryxContext(ctx context.Context, query string, arg ...in
 		trace.WithAttributes(DBStatement.String(query)),
 	}
 
-	spanName := "Prepared Statement"
+	spanName := "sqlx: Prepared Statement"
 	ctx, span := s.tracer.Start(ctx, spanName, opts...)
 	defer span.End()
 
@@ -78,7 +78,7 @@ func (s *SqlxWrapper) QueryxContext(ctx context.Context, query string, arg ...in
 		}
 	}(stmt)
 
-	spanName = "Queryx"
+	spanName = "sqlx: Query Multiple Rows"
 	ctx, spanQueryx := s.tracer.Start(ctx, spanName, []trace.SpanStartOption{
 		trace.WithSpanKind(trace.SpanKindClient),
 		trace.WithAttributes(s.attrs...),
@@ -103,7 +103,7 @@ func (s *SqlxWrapper) ExecContext(ctx context.Context, query string, arg ...inte
 		trace.WithAttributes(DBStatement.String(query)),
 	}
 
-	spanName := "Prepared Statement"
+	spanName := "sqlx: Prepared Statement"
 	ctx, span := s.tracer.Start(ctx, spanName, opts...)
 	defer span.End()
 
@@ -121,7 +121,7 @@ func (s *SqlxWrapper) ExecContext(ctx context.Context, query string, arg ...inte
 		}
 	}(stmt)
 
-	spanName = "ExecContext"
+	spanName = "sqlx: Exec query"
 	ctx, spanExec := s.tracer.Start(ctx, spanName, []trace.SpanStartOption{
 		trace.WithSpanKind(trace.SpanKindClient),
 		trace.WithAttributes(s.attrs...),
@@ -146,7 +146,7 @@ func (s *SqlxWrapper) QueryRowxContext(ctx context.Context, query string, arg ..
 		trace.WithAttributes(DBStatement.String(query)),
 	}
 
-	spanName := "Prepared Statement"
+	spanName := "sqlx: Prepared Statement"
 	ctx, span := s.tracer.Start(ctx, spanName, opts...)
 	defer span.End()
 
@@ -164,7 +164,7 @@ func (s *SqlxWrapper) QueryRowxContext(ctx context.Context, query string, arg ..
 		}
 	}(stmt)
 
-	spanName = "QueryRowx"
+	spanName = "sqlx: Query Single Row"
 	ctx, spanQueryx := s.tracer.Start(ctx, spanName, []trace.SpanStartOption{
 		trace.WithSpanKind(trace.SpanKindClient),
 		trace.WithAttributes(s.attrs...),

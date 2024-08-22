@@ -2,6 +2,7 @@ package restapi
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/generated/api"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/service"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/service/auth"
@@ -107,5 +108,32 @@ func (h *restApi) queryParamBindToStruct(w http.ResponseWriter, r *http.Request,
 		return false
 	}
 
+	err := h.validator.Struct(v)
+	if err != nil {
+		Error(w, r, http.StatusBadRequest, err)
+		return false
+	}
 	return true
+}
+
+func (h *restApi) getUserID(w http.ResponseWriter, r *http.Request) (int64, bool) {
+	userIDAny := r.Context().Value(primitive.UserIDKey)
+
+	if userIDAny == nil {
+		Error(w, r, http.StatusUnauthorized, errors.New("no user id in context"))
+		return 0, false
+	}
+
+	userID, ok := userIDAny.(int64)
+	if !ok {
+		Error(w, r, http.StatusUnauthorized, errors.New("invalid user id, cannot type assertion to int64"))
+		return 0, false
+	}
+
+	if userID == 0 {
+		Error(w, r, http.StatusUnauthorized, errors.New("invalid user id"))
+		return 0, false
+	}
+
+	return userID, true
 }
