@@ -33,9 +33,11 @@ type CreatesInputItem struct {
 }
 
 type GetAllInput struct {
-	MerchantID null.Int
-	IDs        []int64
-	Pagination pagination.PaginationInput
+	Locking     db.Locking
+	Transaction *db.SqlxWrapper
+	MerchantID  null.Int
+	IDs         []int64
+	Pagination  pagination.PaginationInput
 }
 
 type GetAllOutput struct {
@@ -50,4 +52,14 @@ type GetAllOutputItem struct {
 	Name       string  `db:"name"`
 	Qty        int64   `db:"qty"`
 	Price      float64 `db:"price"`
+}
+
+type UpdatesInput struct {
+	Transaction *db.SqlxWrapper
+	Items       []UpdatesInputItem
+}
+
+type UpdatesInputItem struct {
+	ID  int64
+	Qty int64
 }

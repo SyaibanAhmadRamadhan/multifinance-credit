@@ -33,21 +33,23 @@ func Test_repository_Get(t *testing.T) {
 		}
 
 		expectedOutput := limits.GetOutput{
-			ID:         expectedInput.ID.Int64,
-			ConsumerID: rand.Int63(),
-			Tenor:      rand.Int31(),
-			Amount:     rand.Float64(),
+			ID:              expectedInput.ID.Int64,
+			ConsumerID:      rand.Int63(),
+			Tenor:           rand.Int31(),
+			Amount:          rand.Float64(),
+			RemainingAmount: rand.Float64(),
 		}
 
 		mock.ExpectPrepare(regexp.QuoteMeta(
-			`SELECT id, consumer_id, tenor, amount FROM limits WHERE id = ?`,
+			`SELECT id, consumer_id, tenor, amount, remaining_amount FROM limits WHERE id = ?`,
 		)).ExpectQuery().WithArgs(expectedInput.ID.Int64).
-			WillReturnRows(sqlmock.NewRows([]string{"id", "consumer_id", "tenor", "amount"}).
+			WillReturnRows(sqlmock.NewRows([]string{"id", "consumer_id", "tenor", "amount", "remaining_amount"}).
 				AddRow(
 					expectedOutput.ID,
 					expectedOutput.ConsumerID,
 					expectedOutput.Tenor,
 					expectedOutput.Amount,
+					expectedOutput.RemainingAmount,
 				))
 
 		output, err := r.Get(ctx, expectedInput)
@@ -61,7 +63,7 @@ func Test_repository_Get(t *testing.T) {
 		}
 
 		mock.ExpectPrepare(regexp.QuoteMeta(
-			`SELECT id, consumer_id, tenor, amount FROM limits WHERE id = ?`,
+			`SELECT id, consumer_id, tenor, amount, remaining_amount FROM limits WHERE id = ?`,
 		)).ExpectQuery().WithArgs(expectedInput.ID.Int64).
 			WillReturnError(sql.ErrNoRows)
 

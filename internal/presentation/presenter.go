@@ -68,6 +68,10 @@ func handler(presenter *Presenter, r *chi.Mux) {
 		r.Get("/api/v1/bank-account", withOtel(
 			restApi.V1BankAccountsGet,
 		))
+
+		r.Post("/api/v1/transaction", withOtel(
+			restApi.V1TransactionPost,
+		))
 	})
 
 	r.Get("/api/v1/product", withOtel(

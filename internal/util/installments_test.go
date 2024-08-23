@@ -11,7 +11,7 @@ func TestCalculateMonthlyInstallments(t *testing.T) {
 		name                string
 		principal           float64
 		annualInterestRate  float64
-		tenorInMonths       int64
+		tenorInMonths       int32
 		expectedInstallment float64
 	}{
 		{

@@ -42,13 +42,15 @@ func Test_repository_Creates(t *testing.T) {
 		}
 
 		mock.ExpectPrepare(regexp.QuoteMeta(
-			`INSERT INTO limits (consumer_id,tenor,amount) VALUES (?,?,?),(?,?,?)`,
+			`INSERT INTO limits (consumer_id,tenor,amount,remaining_amount) VALUES (?,?,?,?),(?,?,?,?)`,
 		)).ExpectExec().WithArgs(
 			expectedInput.ConsumerID,
 			expectedInput.Items[0].Tenor,
 			expectedInput.Items[0].Amount,
+			expectedInput.Items[0].Amount,
 			expectedInput.ConsumerID,
 			expectedInput.Items[1].Tenor,
+			expectedInput.Items[1].Amount,
 			expectedInput.Items[1].Amount,
 		).WillReturnResult(sqlmock.NewResult(1, 1))
 

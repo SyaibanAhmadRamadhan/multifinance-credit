@@ -4,14 +4,18 @@ import (
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/db"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/repository/datastore/bank_accounts"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/repository/datastore/consumers"
+	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/repository/datastore/installments"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/repository/datastore/limits"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/repository/datastore/products"
+	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/repository/datastore/transaction_items"
+	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/repository/datastore/transactions"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/repository/datastore/users"
 	minio_repository "github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/repository/s3/minio"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/service/auth"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/service/bank_account"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/service/consumer"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/service/product"
+	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/service/transaction"
 	"github.com/jmoiron/sqlx"
 	"github.com/jonboulle/clockwork"
 	"github.com/minio/minio-go/v7"
@@ -22,6 +26,7 @@ type Dependency struct {
 	ConsumerService    consumer.Service
 	BankAccountService bank_account.Service
 	ProductService     product.Service
+	TransactionService transaction.Service
 }
 
 type NewDependencyOpts struct {
@@ -40,6 +45,9 @@ func NewDependency(opts NewDependencyOpts) *Dependency {
 	bankAccountRepository := bank_accounts.NewRepository(sqlxWrapper)
 	limitRepository := limits.NewRepository(sqlxWrapper)
 	productRepository := products.NewRepository(sqlxWrapper)
+	transactionRepository := transactions.NewRepository(sqlxWrapper)
+	transactionItemRepository := transaction_items.NewRepository(sqlxWrapper)
+	installmentRepository := installments.NewRepository(sqlxWrapper)
 	minioRepository := minio_repository.NewRepository(opts.MinioClient, opts.Clock)
 
 	// SERVICE LAYER
@@ -66,10 +74,19 @@ func NewDependency(opts NewDependencyOpts) *Dependency {
 		S3Repository:      minioRepository,
 		DBTx:              sqlxTransaction,
 	})
+	transactionService := transaction.NewService(transaction.NewServiceOpts{
+		ProductRepository:         productRepository,
+		TransactionRepository:     transactionRepository,
+		TransactionItemRepository: transactionItemRepository,
+		InstallmentRepository:     installmentRepository,
+		LimitRepository:           limitRepository,
+		DBTx:                      sqlxTransaction,
+	})
 	return &Dependency{
 		AuthService:        authService,
 		ConsumerService:    consumerService,
 		BankAccountService: bankAccountService,
 		ProductService:     productService,
+		TransactionService: transactionService,
 	}
 }

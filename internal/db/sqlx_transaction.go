@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/util/tracer"
 	"github.com/jmoiron/sqlx"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -37,7 +38,7 @@ func (s *sqlxTransaction) DoTransaction(ctx context.Context, opt *sql.TxOptions,
 	tx, err := s.db.BeginTxx(ctx, opt)
 	if err != nil {
 		recordError(span, err)
-		return err
+		return tracer.Error(err)
 	}
 
 	defer func() {

@@ -7,14 +7,19 @@ import (
 )
 
 type GetInput struct {
-	ID null.Int
+	Tx         *db.SqlxWrapper
+	Locking    db.Locking
+	ID         null.Int
+	Tenor      null.Int32
+	ConsumerID null.Int
 }
 
 type GetOutput struct {
-	ID         int64   `db:"id"`
-	ConsumerID int64   `db:"consumer_id"`
-	Tenor      int32   `db:"tenor"`
-	Amount     float64 `db:"amount"`
+	ID              int64   `db:"id"`
+	ConsumerID      int64   `db:"consumer_id"`
+	Tenor           int32   `db:"tenor"`
+	Amount          float64 `db:"amount"`
+	RemainingAmount float64 `db:"remaining_amount"`
 }
 
 type CreatesInput struct {
@@ -43,4 +48,10 @@ type GetAllOutputItem struct {
 	ConsumerID int64   `db:"consumer_id"`
 	Tenor      int32   `db:"tenor"`
 	Amount     float64 `db:"amount"`
+}
+
+type UpdateInput struct {
+	Transaction     *db.SqlxWrapper
+	ID              int64
+	RemainingAmount float64
 }

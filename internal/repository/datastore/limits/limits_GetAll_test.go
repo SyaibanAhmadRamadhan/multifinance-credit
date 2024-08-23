@@ -62,7 +62,7 @@ func Test_repository_GetAll(t *testing.T) {
 			WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(expectedTotalData))
 
 		mock.ExpectPrepare(regexp.QuoteMeta(
-			`SELECT id, consumer_id, tenor, amount FROM limits WHERE consumer_id = ? LIMIT 2`,
+			`SELECT id, consumer_id, tenor, amount FROM limits WHERE consumer_id = ? ORDER BY id DESC LIMIT 2`,
 		)).ExpectQuery().WithArgs(expectedInput.ConsumerID.Int64).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "consumer_id", "tenor", "amount"}).
 				AddRow(

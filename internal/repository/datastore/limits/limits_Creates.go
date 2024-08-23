@@ -16,11 +16,11 @@ func (r *repository) Creates(ctx context.Context, input CreatesInput) (err error
 	}
 
 	query := r.sq.Insert("limits").Columns(
-		"consumer_id", "tenor", "amount",
+		"consumer_id", "tenor", "amount", "remaining_amount",
 	)
 
 	for _, item := range input.Items {
-		query = query.Values(input.ConsumerID, item.Tenor, item.Amount)
+		query = query.Values(input.ConsumerID, item.Tenor, item.Amount, item.Amount)
 	}
 
 	rawQuery, args, err := query.ToSql()

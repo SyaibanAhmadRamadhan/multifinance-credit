@@ -10,7 +10,7 @@ import (
 
 func (r *repository) GetAll(ctx context.Context, input GetAllInput) (output GetAllOutput, err error) {
 	query := r.sq.Select("id", "consumer_id", "tenor", "amount").
-		From("limits")
+		From("limits").OrderBy("id DESC")
 	queryCount := r.sq.Select("COUNT(*)").From("limits")
 	if input.ConsumerID.Valid {
 		query = query.Where(squirrel.Eq{"consumer_id": input.ConsumerID.Int64})
@@ -23,10 +23,15 @@ func (r *repository) GetAll(ctx context.Context, input GetAllInput) (output GetA
 	}
 	totalData := int64(0)
 
-	row, err := r.sqlx.QueryRowxContext(ctx, rawQueryCount, args...)
+	row, stmt, err := r.sqlx.QueryRowxContext(ctx, rawQueryCount, args...)
 	if err != nil {
 		return output, tracer.Error(err)
 	}
+	defer func() {
+		if errClose := stmt.Close(); errClose != nil {
+			log.Err(errClose).Msg("failed closed stmt")
+		}
+	}()
 
 	err = row.Scan(&totalData)
 	if err != nil {
@@ -42,13 +47,18 @@ func (r *repository) GetAll(ctx context.Context, input GetAllInput) (output GetA
 		return output, tracer.Error(err)
 	}
 
-	rows, err := r.sqlx.QueryxContext(ctx, rawQuery, args...)
+	rows, stmt, err := r.sqlx.QueryxContext(ctx, rawQuery, args...)
 	if err != nil {
 		return output, tracer.Error(err)
 	}
 	defer func() {
 		if errRowsClose := rows.Close(); errRowsClose != nil {
 			log.Err(errRowsClose).Msg("failed closed row")
+		}
+	}()
+	defer func() {
+		if errClose := stmt.Close(); errClose != nil {
+			log.Err(errClose).Msg("failed closed stmt")
 		}
 	}()
 

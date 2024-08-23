@@ -2,6 +2,7 @@ package products
 
 import (
 	"context"
+	"fmt"
 	"github.com/Masterminds/squirrel"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/util/pagination"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/util/tracer"
@@ -10,8 +11,16 @@ import (
 
 func (r *repository) GetAll(ctx context.Context, input GetAllInput) (output GetAllOutput, err error) {
 	query := r.sq.Select("id", "merchant_id", "name", "image", "qty", "price").
-		From("products")
+		From("products").OrderBy("id DESC")
+
 	queryCount := r.sq.Select("COUNT(*)").From("products")
+
+	rdbms := r.sqlx
+	if input.Transaction != nil {
+		rdbms = input.Transaction
+		query = query.Suffix(fmt.Sprintf("FOR %s", input.Locking))
+		queryCount = queryCount.Suffix(fmt.Sprintf("FOR %s", input.Locking))
+	}
 
 	if input.MerchantID.Valid {
 		query = query.Where(squirrel.Eq{"merchant_id": input.MerchantID.Int64})
@@ -28,13 +37,19 @@ func (r *repository) GetAll(ctx context.Context, input GetAllInput) (output GetA
 	}
 	totalData := int64(0)
 
-	row, err := r.sqlx.QueryRowxContext(ctx, rawQueryCount, args...)
+	row, stmt, err := rdbms.QueryRowxContext(ctx, rawQueryCount, args...)
 	if err != nil {
 		return output, tracer.Error(err)
 	}
+	defer func() {
+		if errClose := stmt.Close(); errClose != nil {
+			log.Err(errClose).Msg("failed closed stmt")
+		}
+	}()
 
 	err = row.Scan(&totalData)
 	if err != nil {
+		fmt.Println("rama debug", err)
 		return output, tracer.Error(err)
 	}
 
@@ -47,13 +62,18 @@ func (r *repository) GetAll(ctx context.Context, input GetAllInput) (output GetA
 		return output, tracer.Error(err)
 	}
 
-	rows, err := r.sqlx.QueryxContext(ctx, rawQuery, args...)
+	rows, stmt, err := rdbms.QueryxContext(ctx, rawQuery, args...)
 	if err != nil {
 		return output, tracer.Error(err)
 	}
 	defer func() {
 		if errRowsClose := rows.Close(); errRowsClose != nil {
 			log.Err(errRowsClose).Msg("failed closed row")
+		}
+	}()
+	defer func() {
+		if errClose := stmt.Close(); errClose != nil {
+			log.Err(errClose).Msg("failed closed stmt")
 		}
 	}()
 
