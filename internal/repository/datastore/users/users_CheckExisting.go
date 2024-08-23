@@ -1,0 +1,45 @@
+package users
+
+import (
+	"context"
+	"github.com/Masterminds/squirrel"
+	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/util/tracer"
+	"github.com/rs/zerolog/log"
+)
+
+func (r *repository) CheckExisting(ctx context.Context, input CheckExistingInput) (output CheckExistingOutput, err error) {
+	query := r.sq.Select("1").Prefix("SELECT EXISTS(").
+		From("users")
+	if input.ByID.Valid {
+		query = query.Where(squirrel.Eq{"id": input.ByID.Int64})
+	}
+	if input.ByEmail.Valid {
+		query = query.Where(squirrel.Eq{"email": input.ByEmail.String})
+	}
+
+	sql, args, err := query.Suffix(")").ToSql()
+	if err != nil {
+		return output, tracer.Error(err)
+	}
+
+	row, stmt, err := r.sqlx.QueryRowxContext(ctx, sql, args...)
+	if err != nil {
+		return output, tracer.Error(err)
+	}
+	defer func() {
+		if errClose := stmt.Close(); errClose != nil {
+			log.Err(errClose).Msg("failed closed stmt")
+		}
+	}()
+
+	var existing bool
+	err = row.Scan(&existing)
+	if err != nil {
+		return output, tracer.Error(err)
+	}
+
+	output = CheckExistingOutput{
+		Existing: existing,
+	}
+	return
+}

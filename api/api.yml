@@ -1,35 +1,33 @@
 openapi: 3.0.1
 info:
-  contact: {}
+  contact: { }
   title: multifinance credit api
   version: 1.0.0
 servers:
-  - url: http://localhost:3001
+  - url: http://localhost:3001/api
 paths:
-  /v1/profile/{id}:
-    get:
-      operationId: V1GetProfile
-      parameters:
-        - name: id
-          in: path
-          description: params user id
-          required: true
-          schema:
-            type: integer
-            format: int64
+  /v1/refresh-token:
+    post:
+      operationId: V1RefreshTokenPost
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/V1GetProfile200Response'
+                $ref: '#/components/schemas/V1RefreshTokenPostResponseBody'
         '400':
           description: BAD_REQUEST
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error400'
+        '422':
+          description: UNPROCESSABLE ENTITY
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: INTERNAL SERVER ERROR
           content:
@@ -43,7 +41,48 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       tags:
-        - profile
+        - auth
+  /v1/login:
+    post:
+      operationId: V1LoginPost
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V1LoginPostRequestBody'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1LoginPostResponseBody'
+        '400':
+          description: BAD_REQUEST
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '422':
+          description: UNPROCESSABLE ENTITY
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: INTERNAL SERVER ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: NOT FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+        - auth
   /v1/register:
     post:
       operationId: V1RegisterPost
@@ -77,77 +116,678 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '422':
+          description: UNPROCESSABLE ENTITY
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       tags:
-        - register
+        - auth
+  /v1/image-private:
+    get:
+      summary: Display an image
+      operationId: V1ImagePrivate
+      description: Returns a private image (e.g., KTP image) based on the provided parameters.
+      parameters:
+        - name: image_ktp
+          in: query
+          description: Flag to indicate if the KTP image should be retrieved
+          schema:
+            type: boolean
+            example: true
+        - name: image_selfie
+          in: query
+          description: Flag to indicate if the selfie image should be retrieved
+          schema:
+            type: boolean
+            example: false
+      responses:
+        '200':
+          description: OK - Image retrieved successfully
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: BAD_REQUEST
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '500':
+          description: INTERNAL SERVER ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: NOT FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: UNPROCESSABLE ENTITY
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+        - image
+  /v1/bank-account:
+    get:
+      operationId: V1BankAccountsGet
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            format: int64
+          required: true
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            format: int64
+          required: true
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1BankAccountsGetResponseBody'
+        '400':
+          description: BAD_REQUEST
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '500':
+          description: INTERNAL SERVER ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: NOT FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: UNPROCESSABLE ENTITY
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+        - bank-account
+    post:
+      operationId: V1BankAccountsPost
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V1BankAccountsPostRequestBody'
+      responses:
+        '204':
+          description: SUCCESS CREATED BANK ACCOUNTS
+        '400':
+          description: BAD_REQUEST
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '500':
+          description: INTERNAL SERVER ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: NOT FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: UNPROCESSABLE ENTITY
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+        - bank-account
+  /v1/product:
+    get:
+      operationId: V1ProductsGet
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            format: int64
+          required: true
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            format: int64
+          required: true
+        - name: merchant_id
+          in: query
+          schema:
+            type: integer
+            format: int64
+        - name: ids
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1ProductsGetResponseBody'
+        '400':
+          description: BAD_REQUEST
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '500':
+          description: INTERNAL SERVER ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: NOT FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: UNPROCESSABLE ENTITY
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+        - product
+    post:
+      operationId: V1ProductPost
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V1ProductPostRequestBody'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1ProductPostResponseBody'
+        '400':
+          description: BAD_REQUEST
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '500':
+          description: INTERNAL SERVER ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: NOT FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: UNPROCESSABLE ENTITY
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+        - product
+  /v1/transaction:
+    post:
+      operationId: V1TransactionPost
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V1TransactionPostRequestBody'
+      responses:
+        200:
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1TransactionPostResponseBody'
+        '400':
+          description: BAD_REQUEST
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '500':
+          description: INTERNAL SERVER ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: NOT FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: UNPROCESSABLE ENTITY
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+        - transaction
 components:
   schemas:
-    V1RegisterPost200Response:
+    V1TransactionPostResponseBody:
+      type: object
+      properties:
+        transaction_id:
+          type: integer
+          format: int64
+      required:
+        - transaction_id
+    V1TransactionPostRequestBody:
+      type: object
+      properties:
+        limit_id:
+          type: integer
+          format: int64
+          x-oapi-codegen-extra-tags:
+            binding: required
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/V1TransactionPostRequestBodyProductItem'
+          x-oapi-codegen-extra-tags:
+            binding: min=1,dive
+      required:
+        - limit_id
+        - products
+    V1TransactionPostRequestBodyProductItem:
+      type: object
+      properties:
+        product_id:
+          type: integer
+          format: int64
+          x-oapi-codegen-extra-tags:
+            binding: required
+        qty:
+          type: integer
+          format: int64
+          x-oapi-codegen-extra-tags:
+            binding: required
+      required:
+        - product_id
+        - qty
+    V1ProductPostRequestBody:
+      type: object
+      properties:
+        merchant_id:
+          type: integer
+          format: int64
+          x-oapi-codegen-extra-tags:
+            binding: required,oneof=1 2 3
+        name:
+          type: string
+          x-oapi-codegen-extra-tags:
+            binding: required
+        image:
+          $ref: '#/components/schemas/FileUploadRequest'
+        qty:
+          type: integer
+          format: int64
+          x-oapi-codegen-extra-tags:
+            binding: required
+        price:
+          type: number
+          format: double
+          x-oapi-codegen-extra-tags:
+            binding: required
+      required:
+        - merchant_id
+        - qty
+        - price
+        - image
+        - name
+    V1ProductPostResponseBody:
+      type: object
+      properties:
+        presigned_image_upload:
+          $ref: '#/components/schemas/FileUploadResponse'
+      required:
+        - presigned_image_upload
+    V1ProductsGetResponseBody:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/V1ProductsGetResponseBodyItem'
+        pagination:
+          $ref: '#/components/schemas/PaginationResponse'
+      required:
+        - items
+        - pagination
+    V1ProductsGetResponseBodyItem:
       type: object
       properties:
         id:
           type: integer
           format: int64
+        merchant_id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        image:
+          type: string
+          description: url to view image
+        qty:
+          type: integer
+          format: int64
+        price:
+          type: number
+          format: double
       required:
+        - name
         - id
-    V1RegisterPostRequestBody:
+        - image
+        - merchant_id
+        - price
+        - qty
+    V1BankAccountsPostRequestBody:
       type: object
       properties:
-        username:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/V1BankAccountsPostRequestBodyItem'
+          x-oapi-codegen-extra-tags:
+            binding: min=1,dive
+      required:
+        - items
+    V1BankAccountsPostRequestBodyItem:
+      type: object
+      properties:
+        name:
           type: string
           x-oapi-codegen-extra-tags:
-            validate: "required,max=255,min=6"
+            binding: required
+        account_number:
+          type: string
+          x-oapi-codegen-extra-tags:
+            binding: required
+        account_holder_name:
+          type: string
+          x-oapi-codegen-extra-tags:
+            binding: required
+      required:
+        - account_number
+        - name
+        - account_holder_name
+    V1BankAccountsGetResponseBody:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/V1BankAccountsGetResponseBodyItem'
+        pagination:
+            $ref: '#/components/schemas/PaginationResponse'
+      required:
+        - items
+        - pagination
+    V1BankAccountsGetResponseBodyItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        consumer_id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          description: bank name
+        account_number:
+          type: string
+        account_holder_name:
+          type: string
+      required:
+        - id
+        - account_holder_name
+        - account_number
+        - consumer_id
+        - name
+    V1RefreshTokenPostResponseBody:
+      type: object
+      properties:
+        access_token:
+          $ref: '#/components/schemas/V1TokenJwtResponse'
+      required:
+        - access_token
+    V1LoginPostRequestBody:
+      type: object
+      properties:
         email:
           type: string
           x-oapi-codegen-extra-tags:
-            validate: "required,max=255,min=6,email"
+            binding: "required,min=6,email"
         password:
           type: string
           x-oapi-codegen-extra-tags:
-            validate: "required,max=50,min=6"
-        re_password:
-          type: string
-          x-oapi-codegen-extra-tags:
-            validate: "required,eqfield=Password"
-        first_name:
-          type: string
-          x-oapi-codegen-extra-tags:
-            validate: "required,max=20,min=6"
-        last_name:
-          x-oapi-codegen-extra-tags:
-            validate: "required,max=10,min=6"
+            binding: "required"
       required:
         - email
-        - first_name
-        - last_name
         - password
-        - re_password
-        - username
-    V1GetProfile200Response:
+    V1LoginPostResponseBody:
       type: object
       properties:
-        id:
+        access_token:
+          $ref: '#/components/schemas/V1TokenJwtResponse'
+        user_id:
           type: integer
           format: int64
-        username:
-          type: string
-        first_name:
-          type: string
-        last_name:
-          type: string
         email:
           type: string
       required:
-        - id
-        - name
-        - username
-        - last_name
-        - first_name
         - email
+        - access_token
+        - refresh_token
+        - user_id
+    V1TokenJwtResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        expired_at:
+          type: string
+          format: date-time
+          description: format time utc and RFC3339
+      required:
+        - expired_at
+        - token
+    V1RegisterPost200Response:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          format: int64
+        consumer_id:
+          type: integer
+          format: int64
+        upload_photo_ktp:
+          $ref: '#/components/schemas/FileUploadResponse'
+        upload_photo_selfie:
+          $ref: '#/components/schemas/FileUploadResponse'
+      required:
+        - user_id
+        - consumer_id
+        - upload_photo_ktp
+        - upload_photo_selfie
+    V1RegisterPostRequestBody:
+      type: object
+      properties:
+        full_name:
+          type: string
+          x-oapi-codegen-extra-tags:
+            binding: "required,max=255,min=6"
+        legal_name:
+          type: string
+          x-oapi-codegen-extra-tags:
+            binding: "required,max=255,min=6"
+        place_of_birth:
+          type: string
+          x-oapi-codegen-extra-tags:
+            binding: "required,max=255"
+        photo_ktp:
+          $ref: '#/components/schemas/FileUploadRequest'
+        photo_selfie:
+          $ref: '#/components/schemas/FileUploadRequest'
+        date_of_birth:
+          type: string
+          format: date-time
+          x-oapi-codegen-extra-tags:
+            binding: "required"
+        salary:
+          type: number
+          format: double
+          x-oapi-codegen-extra-tags:
+            binding: "required"
+        email:
+          type: string
+          x-oapi-codegen-extra-tags:
+            binding: "required,max=255,min=6,email"
+        password:
+          type: string
+          x-oapi-codegen-extra-tags:
+            binding: "required,max=50,min=6"
+        re_password:
+          type: string
+          x-oapi-codegen-extra-tags:
+            binding: "required,eqfield=Password"
+        nik:
+          type: string
+          x-oapi-codegen-extra-tags:
+            binding: "required"
+      required:
+        - email
+        - password
+        - re_password
+        - full_name
+        - legal_name
+        - date_of_birth
+        - place_of_birth
+        - salary
+        - photo_ktp
+        - photo_selfie
+        - nik
+    PaginationResponse:
+      type: object
+      properties:
+        page:
+          type: integer
+          format: int64
+        page_size:
+          type: integer
+          format: int64
+        page_count:
+          type: integer
+          format: int64
+        total_data:
+          type: integer
+          format: int64
+      required:
+        - page
+        - page_count
+        - page_size
+        - total_data
+    FileUploadRequest:
+      type: object
+      properties:
+        checksum_sha256:
+          type: string
+          description: sha256 checksum file
+          x-oapi-codegen-extra-tags:
+            binding: required
+        identifier:
+          type: string
+          description: identifier
+          x-oapi-codegen-extra-tags:
+            binding: required
+        mime_type:
+          type: string
+          description: 'common mime type: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types'
+          x-oapi-codegen-extra-tags:
+            binding: required
+        original_filename:
+          type: string
+          description: original filename
+          x-oapi-codegen-extra-tags:
+            binding: required
+        size:
+          type: integer
+          format: int64
+          description: sizes in bytes
+          x-oapi-codegen-extra-tags:
+            binding: required
+      required:
+        - checksum_sha256
+        - identifier
+        - mime_type
+        - original_filename
+        - size
+    FileUploadResponse:
+      type: object
+      properties:
+        identifier:
+          type: string
+          description: identifier response from request
+        upload_expired_at:
+          type: string
+          format: date-time
+        upload_url:
+          type: string
+        minio_form_data:
+          type: object
+          additionalProperties:
+            type: string
+      required:
+        - identifier
+        - upload_expired_at
+        - upload_url
+        - minio_form_data
     Error400:
       type: object
       properties:
-        request_id:
-          type: string
         errors:
           type: object
           additionalProperties:
@@ -156,15 +796,11 @@ components:
               type: string
       required:
         - errors
-        - request_id
     Error:
       type: object
       properties:
-        request_id:
-          type: string
         message:
           type: string
       required:
         - message
-        - request_id
 

@@ -3,7 +3,7 @@ CREATE TABLE transaction_items
     id             SERIAL PRIMARY KEY,
     transaction_id INTEGER      NOT NULL,
     merchant_id    INTEGER      NOT NULL,
-    name           VARCHAR(255) NOT NULL,
+    queryParamBindToStruct           VARCHAR(255) NOT NULL,
     image          varchar(255),
     qty            INTEGER,
     unit_price     DOUBLE PRECISION,

@@ -6,7 +6,7 @@ CREATE TABLE loans
     consumer_id     INT          NOT NULL,
     bank_account_id INT          NOT NULL,
     admin_fee DOUBLE NOT NULL,
-    contract_number INT          NOT NULL,
+    contract_number BIGINT          NOT NULL,
     date            TIMESTAMP    NOT NULL,
     amount DOUBLE NOT NULL,
     installment_amount DOUBLE NOT NULL,

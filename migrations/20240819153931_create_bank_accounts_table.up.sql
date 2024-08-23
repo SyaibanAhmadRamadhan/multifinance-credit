@@ -2,7 +2,7 @@ CREATE TABLE bank_accounts
 (
     id                  INT AUTO_INCREMENT PRIMARY KEY,
     consumer_id         INT          NOT NULL,
-    name                VARCHAR(100) NOT NULL,
+    queryParamBindToStruct                VARCHAR(100) NOT NULL,
     account_number      VARCHAR(100) NOT NULL,
     account_holder_name VARCHAR(100) NOT NULL,
 
