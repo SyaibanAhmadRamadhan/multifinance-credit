@@ -50,6 +50,13 @@ func handler(presenter *Presenter, r *chi.Mux) {
 	r.Use(middlewareCustom.StartingOtelTrace)
 
 	r.Group(func(r chi.Router) {
+		r.Use(middleware.BasicAuth("server-realm", map[string]string{
+			"admin": "admin",
+		}))
+		r.Post("/api/v1/product", withOtel(restApi.V1ProductPost))
+	})
+
+	r.Group(func(r chi.Router) {
 		r.Use(middlewareCustom.AuthUser)
 		r.Get("/api/v1/image-private", withOtel(
 			restApi.V1ImagePrivateGet,
@@ -62,6 +69,10 @@ func handler(presenter *Presenter, r *chi.Mux) {
 			restApi.V1BankAccountsGet,
 		))
 	})
+
+	r.Get("/api/v1/product", withOtel(
+		restApi.V1ProductsGet,
+	))
 
 	r.Post("/api/v1/register", withOtel(
 		restApi.V1RegisterPost,

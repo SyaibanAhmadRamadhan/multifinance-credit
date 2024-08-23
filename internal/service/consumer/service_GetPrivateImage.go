@@ -33,7 +33,7 @@ func (s *service) GetPrivateImage(ctx context.Context, input GetPrivateImageInpu
 		return
 	}
 
-	privateObjectOutput, err := s.s3Repository.GetPrivateObject(ctx, s3.GetPrivateObjectInput{
+	privateObjectOutput, err := s.s3Repository.GetObject(ctx, s3.GetObjectInput{
 		ObjectName: objectName,
 	})
 	if err != nil {

@@ -261,9 +261,186 @@ paths:
                 $ref: '#/components/schemas/Error'
       tags:
         - bank-account
-
+  /v1/product:
+    get:
+      operationId: V1ProductsGet
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            format: int64
+          required: true
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            format: int64
+          required: true
+        - name: merchant_id
+          in: query
+          schema:
+            type: integer
+            format: int64
+        - name: ids
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1ProductsGetResponseBody'
+        '400':
+          description: BAD_REQUEST
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '500':
+          description: INTERNAL SERVER ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: NOT FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: UNPROCESSABLE ENTITY
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+        - product
+    post:
+      operationId: V1ProductPost
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V1ProductPostRequestBody'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1ProductPostResponseBody'
+        '400':
+          description: BAD_REQUEST
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '500':
+          description: INTERNAL SERVER ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: NOT FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: UNPROCESSABLE ENTITY
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+        - product
 components:
   schemas:
+    V1ProductPostRequestBody:
+      type: object
+      properties:
+        merchant_id:
+          type: integer
+          format: int64
+          x-oapi-codegen-extra-tags:
+            binding: required,oneof=1 2 3
+        name:
+          type: string
+          x-oapi-codegen-extra-tags:
+            binding: required
+        image:
+          $ref: '#/components/schemas/FileUploadRequest'
+        qty:
+          type: integer
+          format: int64
+          x-oapi-codegen-extra-tags:
+            binding: required
+        price:
+          type: number
+          format: double
+          x-oapi-codegen-extra-tags:
+            binding: required
+      required:
+        - merchant_id
+        - qty
+        - price
+        - image
+        - name
+    V1ProductPostResponseBody:
+      type: object
+      properties:
+        presigned_image_upload:
+          $ref: '#/components/schemas/FileUploadResponse'
+      required:
+        - presigned_image_upload
+    V1ProductsGetResponseBody:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/V1ProductsGetResponseBodyItem'
+        pagination:
+          $ref: '#/components/schemas/PaginationResponse'
+      required:
+        - items
+        - pagination
+    V1ProductsGetResponseBodyItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        merchant_id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        image:
+          type: string
+          description: url to view image
+        qty:
+          type: integer
+          format: int64
+        price:
+          type: number
+          format: double
+      required:
+        - name
+        - id
+        - image
+        - merchant_id
+        - price
+        - qty
     V1BankAccountsPostRequestBody:
       type: object
       properties:
@@ -477,19 +654,29 @@ components:
         checksum_sha256:
           type: string
           description: sha256 checksum file
+          x-oapi-codegen-extra-tags:
+            binding: required
         identifier:
           type: string
           description: identifier
+          x-oapi-codegen-extra-tags:
+            binding: required
         mime_type:
           type: string
           description: 'common mime type: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types'
+          x-oapi-codegen-extra-tags:
+            binding: required
         original_filename:
           type: string
           description: original filename
+          x-oapi-codegen-extra-tags:
+            binding: required
         size:
           type: integer
           format: int64
           description: sizes in bytes
+          x-oapi-codegen-extra-tags:
+            binding: required
       required:
         - checksum_sha256
         - identifier

@@ -2,7 +2,6 @@ package infra
 
 import (
 	"context"
-	"fmt"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/conf"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/util"
 	"github.com/minio/minio-go/v7"
@@ -17,9 +16,9 @@ func NewMinio(cred conf.ConfigMinio) *minio.Client {
 	})
 	util.Panic(err)
 
-	exist, err := minioClient.BucketExists(context.Background(), cred.PrivateBucket)
+	_, err = minioClient.BucketExists(context.Background(), cred.PrivateBucket)
 	util.Panic(err)
-	fmt.Println(exist)
+
 	log.Info().Msg("initialization minio successfully")
 	return minioClient
 }

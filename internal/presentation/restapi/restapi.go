@@ -8,6 +8,7 @@ import (
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/service/auth"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/service/bank_account"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/service/consumer"
+	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/service/product"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/util/pagination"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/util/primitive"
 	"github.com/go-playground/validator/v10"
@@ -22,6 +23,7 @@ type restApi struct {
 	authService        auth.Service
 	consumerService    consumer.Service
 	bankAccountService bank_account.Service
+	productService     product.Service
 }
 
 func New(dependency *service.Dependency) *restApi {
@@ -36,13 +38,14 @@ func New(dependency *service.Dependency) *restApi {
 		authService:        dependency.AuthService,
 		consumerService:    dependency.ConsumerService,
 		bankAccountService: dependency.BankAccountService,
+		productService:     dependency.ProductService,
 	}
 }
 
 func (h *restApi) bodyRequestBindToStruct(w http.ResponseWriter, r *http.Request, v interface{}) bool {
 	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
-		Error(w, r, http.StatusInternalServerError, err)
+		Error(w, r, http.StatusUnprocessableEntity, err)
 		return false
 	}
 	defer r.Body.Close()
