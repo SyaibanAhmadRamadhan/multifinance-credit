@@ -25,18 +25,19 @@ func Init() {
 		viper.SetConfigType("json")
 		viper.AddConfigPath(dir)
 		err := viper.ReadInConfig()
-		if err == nil {
-			viper.SetConfigName("env.override")
-			err = viper.MergeInConfig()
-			util.Panic(err)
-
-			if err = viper.Unmarshal(&conf); err != nil {
-				panic(err)
-			}
-
-			newLogger()
-			return
+		util.Panic(err)
+		//if err == nil {
+		//	viper.SetConfigName("env.override")
+		//	err = viper.MergeInConfig()
+		//	util.Panic(err)
+		//
+		if err = viper.Unmarshal(&conf); err != nil {
+			panic(err)
 		}
+		//
+		//}
+		newLogger()
+		return
 	}
 
 	panic("cannot load env")

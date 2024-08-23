@@ -16,6 +16,21 @@ x-minio-common: &minio-common
     retries: 3
 
 services:
+#  app:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    depends_on:
+#      mariadb:
+#        condition: service_healthy
+#      otel-collector:
+#        condition: service_started
+#    ports:
+#      - "3002:3002"
+#    networks:
+#      - multifinance-credit
+#    command: ["sh", "-c", "./app"]
+
   # observability setup
   zipkin-all-in-one:
     image: openzipkin/zipkin:latest
@@ -32,7 +47,7 @@ services:
     restart: always
     command: [ "--config=/providerconf/otel-config.yml", "${OTELCOL_ARGS}" ]
     volumes:
-      - "./conf/otel-config.yml:/providerconf/otel-config.yml:ro"
+      - "./otel-config.yml:/providerconf/otel-config.yml:ro"
     ports:
       - "1888:1888"   # pprof extension
       - "8888:8888"   # Prometheus metrics exposed by the collector
@@ -91,7 +106,7 @@ services:
     image: nginx:1.19.2-alpine
     hostname: nginx
     volumes:
-      - ./conf/minio-nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./minio-nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -114,6 +129,11 @@ services:
       MYSQL_USER: multifinance-credit-user
       MYSQL_PASSWORD: multifinance-credit-pw
       MYSQL_ROOT_PASSWORD: root
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
     volumes:
       - mariadb-data:/var/lib/mysql
     networks:

@@ -45,10 +45,10 @@ status:
 	@$(MIGRATE_CMD) status -dir $(MIGRATE_DIR)
 
 starting-infra:
-	docker compose -f deployment/docker-compose.yml up -d
+	docker compose -f docker-compose.yml up -d
 
 stop-infra:
-	docker compose -f deployment/docker-compose.yml stop
+	docker compose -f docker-compose.yml stop
 
 test:
 	go test -tags test -short -failfast -coverprofile coverage.out ./...
@@ -56,7 +56,8 @@ test:
 init: starting-infra \
 	install \
 	generate \
-	up
+	up \
+	run
 
 run:
 	air -c air.toml

@@ -24,7 +24,6 @@ type ConfigMinio struct {
 	SecretAccessKey string `mapstructure:"SECRET_ACCESS_KEY"`
 	UseSSL          bool   `mapstructure:"USE_SSL"`
 	PrivateBucket   string `mapstructure:"PRIVATE_BUCKET"`
-	PublicBucket    string `mapstructure:"PUBLIC_BUCKET"`
 }
 
 type ConfigJwt struct {
