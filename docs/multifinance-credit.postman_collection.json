@@ -1,0 +1,410 @@
+{
+	"info": {
+		"_postman_id": "681e7ef2-3d62-4e3b-918a-3e1bbf9bdee6",
+		"name": "multifinance-credit",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "27426623"
+	},
+	"item": [
+		{
+			"name": "register",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"full_name\": \"syaiban ahmad ramadhan\",\n  \"legal_name\": \"syaiban ahmad ramadhan\",\n  \"place_of_birth\": \"depok\",\n  \"nik\": \"121345123s81029380\",\n  \"photo_ktp\": {\n    \"checksum_sha256\": \"e7536e41c15d10ab1999c7931324cc85c0d31967f9a208c5ce9e2384dfc17b21\",\n    \"identifier\": \"d52e91f1-282d-4c50-ae7b-4eb1cec2adfd\",\n    \"mime_type\": \"image/png\",\n    \"original_filename\": \"png1.png\",\n    \"size\": 228408\n  },\n  \"photo_selfie\": {\n    \"checksum_sha256\": \"362e202f86bbe14bb0ffc2dd17f27bdd442f669190e9106cb53f0849999b5449\",\n    \"identifier\": \"eb4cfcf0-68ed-4ebd-b4c4-63cbe119b805\",\n    \"mime_type\": \"image/png\",\n    \"original_filename\": \"png2.png\",\n    \"size\": 38705\n  },\n  \"date_of_birth\": \"2019-08-24T14:15:22Z\",\n  \"salary\": 10000000,\n  \"email\": \"ibanrama2s9@gmail.com\",\n  \"password\": \"rama123\",\n  \"re_password\": \"rama123\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{localhost}}/api/v1/register",
+					"host": [
+						"{{localhost}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "image-display",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{localhost}}/api/v1/image-private?image_ktp=true",
+					"host": [
+						"{{localhost}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"image-private"
+					],
+					"query": [
+						{
+							"key": "user_id",
+							"value": "42",
+							"disabled": true
+						},
+						{
+							"key": "image_ktp",
+							"value": "true"
+						},
+						{
+							"key": "asd",
+							"value": "2",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "upload-prisigned url",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "bucket",
+							"value": "private",
+							"type": "text"
+						},
+						{
+							"key": "key",
+							"value": "c5b0797a-7019-436a-9498-f79eed18be70.png",
+							"type": "text"
+						},
+						{
+							"key": "policy",
+							"value": "eyJleHBpcmF0aW9uIjoiMjAyNC0wOC0yM1QwMzo1OToxNi4xNjVaIiwiY29uZGl0aW9ucyI6W1siZXEiLCIka2V5IiwiYzViMDc5N2EtNzAxOS00MzZhLTk0OTgtZjc5ZWVkMThiZTcwLnBuZyJdLFsiZXEiLCIkYnVja2V0IiwicHJpdmF0ZSJdLFsiZXEiLCIkeC1hbXotZGF0ZSIsIjIwMjQwODIzVDAzNTQxNloiXSxbImVxIiwiJHgtYW16LWFsZ29yaXRobSIsIkFXUzQtSE1BQy1TSEEyNTYiXSxbImVxIiwiJHgtYW16LWNyZWRlbnRpYWwiLCJaODZscHdvZDBRN0FlMGVTLzIwMjQwODIzL3VzLWVhc3QtMS9zMy9hd3M0X3JlcXVlc3QiXSxbImNvbnRlbnQtbGVuZ3RoLXJhbmdlIiwgMTAyNCwgNDE5NDMwNF1dfQ==",
+							"type": "text"
+						},
+						{
+							"key": "x-amz-algorithm",
+							"value": "AWS4-HMAC-SHA256",
+							"type": "text"
+						},
+						{
+							"key": "x-amz-credential",
+							"value": "Z86lpwod0Q7Ae0eS/20240823/us-east-1/s3/aws4_request",
+							"type": "text"
+						},
+						{
+							"key": "x-amz-date",
+							"value": "20240823T035416Z",
+							"type": "text"
+						},
+						{
+							"key": "x-amz-signature",
+							"value": "7b8e017399134c5545cbeffd2e9ff9ac45a94688eddbcdf6d05b7f3383de87b9",
+							"type": "text"
+						},
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/home/ibanrama/Pictures/png1.png"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:9000/private",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"private"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\":\"ibanrama29@gmail.com\",\n    \"password\": \"rama123\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{localhost}}/api/v1/login",
+					"host": [
+						"{{localhost}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "refresh-token",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{localhost}}/api/v1/refresh-token",
+					"host": [
+						"{{localhost}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"refresh-token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create-bank-account",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"items\": [\n        {\n            \"name\": \"BCA\",\n            \"account_number\": \"1234\",\n            \"account_holder_name\": \"syaiban ahmad ramadhan\"\n        },\n        {\n            \"name\": \"BCA\",\n            \"account_number\": \"1234\",\n            \"account_holder_name\": \"syaiban ahmad ramadhan\"\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{localhost}}/api/v1/bank-account",
+					"host": [
+						"{{localhost}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"bank-account"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get-bank-account",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{localhost}}/api/v1/bank-account?page=1&page_size=2",
+					"host": [
+						"{{localhost}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"bank-account"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "page_size",
+							"value": "2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create product",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "admin",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"merchant_id\": 1,\n    \"name\": \"earphone 2\",\n    \"price\": 100000,\n    \"qty\": 5,\n    \"image\": {\n        \"checksum_sha256\": \"e7536e41c15d10ab1999c7931324cc85c0d31967f9a208c5ce9e2384dfc17b21\",\n        \"identifier\": \"d52e91f1-282d-4c50-ae7b-4eb1cec2adfd\",\n        \"mime_type\": \"image/png\",\n        \"original_filename\": \"png1.png\",\n        \"size\": 228408\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{localhost}}/api/v1/product",
+					"host": [
+						"{{localhost}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"product"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get product",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{localhost}}/api/v1/product?merchant_id=1&ids=1,2",
+					"host": [
+						"{{localhost}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"product"
+					],
+					"query": [
+						{
+							"key": "merchant_id",
+							"value": "1"
+						},
+						{
+							"key": "ids",
+							"value": "1,2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create transaction",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"limit_id\": 5,\n  \"products\": [\n    {\n      \"product_id\": 5,\n      \"qty\": 1\n    }\n  ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{localhost}}/api/v1/transaction",
+					"host": [
+						"{{localhost}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"transaction"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "token",
+			"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjQzNDg5MTYsInN1YiI6NX0.Tu7zDetfkUSyXsBa3mJL9-x8OhJz-JKch_2VNVCVg4o",
+			"type": "string"
+		}
+	]
+}

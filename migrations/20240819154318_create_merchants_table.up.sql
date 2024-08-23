@@ -2,5 +2,5 @@
 CREATE TABLE merchants
 (
     id   INT AUTO_INCREMENT PRIMARY KEY,
-    queryParamBindToStruct VARCHAR(255) NOT NULL
+    name VARCHAR(255) NOT NULL
 );

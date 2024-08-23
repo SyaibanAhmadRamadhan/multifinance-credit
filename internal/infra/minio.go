@@ -16,8 +16,13 @@ func NewMinio(cred conf.ConfigMinio) *minio.Client {
 	})
 	util.Panic(err)
 
-	_, err = minioClient.BucketExists(context.Background(), cred.PrivateBucket)
+	exist, err := minioClient.BucketExists(context.Background(), cred.PrivateBucket)
 	util.Panic(err)
+
+	if !exist {
+		err = minioClient.MakeBucket(context.Background(), cred.PrivateBucket, minio.MakeBucketOptions{})
+		util.Panic(err)
+	}
 
 	log.Info().Msg("initialization minio successfully")
 	return minioClient
