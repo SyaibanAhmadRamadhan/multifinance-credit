@@ -11,7 +11,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-func (r *repository) GetPrivateObject(ctx context.Context, input s3.GetPrivateObjectInput) (output s3.GetPrivateObjectOutput, err error) {
+func (r *repository) GetObject(ctx context.Context, input s3.GetObjectInput) (output s3.GetObjectOutput, err error) {
 	ctx, span := r.tracer.Start(ctx, "minio s3: Get Private Object", trace.WithAttributes(
 		attribute.String("bucket_name", conf.GetConfig().Minio.PrivateBucket),
 		attribute.String("object_name", input.ObjectName),
@@ -31,7 +31,7 @@ func (r *repository) GetPrivateObject(ctx context.Context, input s3.GetPrivateOb
 		return output, tracer.Error(err)
 	}
 
-	output = s3.GetPrivateObjectOutput{
+	output = s3.GetObjectOutput{
 		Object: object,
 	}
 	return

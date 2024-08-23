@@ -133,4 +133,5 @@ var defaultStatusCodeMessages = map[int]string{
 	http.StatusMethodNotAllowed:    "Method Not Allowed",
 	http.StatusConflict:            "Conflict",
 	http.StatusInternalServerError: "Internal Status Error",
+	http.StatusUnprocessableEntity: "Unprocessable Entity",
 }

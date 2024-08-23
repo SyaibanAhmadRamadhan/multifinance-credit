@@ -50,10 +50,10 @@ func Test_service_GetPrivateImage(t *testing.T) {
 			}, nil)
 
 		mockS3Repository.EXPECT().
-			GetPrivateObject(ctx, s3.GetPrivateObjectInput{
+			GetObject(ctx, s3.GetObjectInput{
 				ObjectName: "image-ktp.png",
 			}).
-			Return(s3.GetPrivateObjectOutput{
+			Return(s3.GetObjectOutput{
 				Object: expectedIoRead,
 			}, nil)
 

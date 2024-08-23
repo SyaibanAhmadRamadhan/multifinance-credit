@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/presentation/restapi"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -86,11 +85,7 @@ func withOtel(next http.HandlerFunc, opts ...Option) http.HandlerFunc {
 		}
 
 		if recorder.logReqBody && (request.Method == http.MethodPost || request.Method == http.MethodPut) {
-			var err error
-			request, err = addRequestBodyToSpan(request)
-			if err != nil {
-				restapi.Error(recorder, request, http.StatusInternalServerError, err)
-			}
+			request, _ = addRequestBodyToSpan(request)
 		}
 
 		next.ServeHTTP(recorder, request)

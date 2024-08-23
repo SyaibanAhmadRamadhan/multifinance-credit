@@ -39,11 +39,11 @@ func Test_repository_GetPrivateObject(t *testing.T) {
 	m := minio.NewRepository(clnt, mockClockWork)
 
 	t.Run("should return correct object", func(t *testing.T) {
-		expectedInput := s3.GetPrivateObjectInput{
+		expectedInput := s3.GetObjectInput{
 			ObjectName: faker.Name(),
 		}
 
-		output, err := m.GetPrivateObject(ctx, expectedInput)
+		output, err := m.GetObject(ctx, expectedInput)
 		require.NoError(t, err)
 
 		buf, err := io.ReadAll(output.Object)

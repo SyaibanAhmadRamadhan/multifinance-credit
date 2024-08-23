@@ -5,11 +5,13 @@ import (
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/repository/datastore/bank_accounts"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/repository/datastore/consumers"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/repository/datastore/limits"
+	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/repository/datastore/products"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/repository/datastore/users"
 	minio_repository "github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/repository/s3/minio"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/service/auth"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/service/bank_account"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/service/consumer"
+	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/service/product"
 	"github.com/jmoiron/sqlx"
 	"github.com/jonboulle/clockwork"
 	"github.com/minio/minio-go/v7"
@@ -19,6 +21,7 @@ type Dependency struct {
 	AuthService        auth.Service
 	ConsumerService    consumer.Service
 	BankAccountService bank_account.Service
+	ProductService     product.Service
 }
 
 type NewDependencyOpts struct {
@@ -36,6 +39,7 @@ func NewDependency(opts NewDependencyOpts) *Dependency {
 	consumerRepository := consumers.NewRepository(sqlxWrapper)
 	bankAccountRepository := bank_accounts.NewRepository(sqlxWrapper)
 	limitRepository := limits.NewRepository(sqlxWrapper)
+	productRepository := products.NewRepository(sqlxWrapper)
 	minioRepository := minio_repository.NewRepository(opts.MinioClient, opts.Clock)
 
 	// SERVICE LAYER
@@ -57,9 +61,15 @@ func NewDependency(opts NewDependencyOpts) *Dependency {
 		ConsumerRepository:    consumerRepository,
 		DBTx:                  sqlxTransaction,
 	})
+	productService := product.NewService(product.NewServiceOpts{
+		ProductRepository: productRepository,
+		S3Repository:      minioRepository,
+		DBTx:              sqlxTransaction,
+	})
 	return &Dependency{
 		AuthService:        authService,
 		ConsumerService:    consumerService,
 		BankAccountService: bankAccountService,
+		ProductService:     productService,
 	}
 }

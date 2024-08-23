@@ -18,10 +18,20 @@ type CreatePresignedUrlOutput struct {
 	MinioFormData map[string]string
 }
 
-type GetPrivateObjectInput struct {
+type GetObjectInput struct {
 	ObjectName string
 }
 
-type GetPrivateObjectOutput struct {
+type GetObjectOutput struct {
 	Object io.ReadCloser
+}
+
+type GetPresignedUrlInput struct {
+	ObjectName string
+	BucketName string
+	Expired    time.Duration
+}
+
+type GetPresignedUrlOutput struct {
+	URL string
 }

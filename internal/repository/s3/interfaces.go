@@ -4,5 +4,6 @@ import "context"
 
 type Repository interface {
 	CreatePresignedUrl(ctx context.Context, input CreatePresignedUrlInput) (output CreatePresignedUrlOutput, err error)
-	GetPrivateObject(ctx context.Context, input GetPrivateObjectInput) (output GetPrivateObjectOutput, err error)
+	GetObject(ctx context.Context, input GetObjectInput) (output GetObjectOutput, err error)
+	GetPresignedUrl(ctx context.Context, input GetPresignedUrlInput) (output GetPresignedUrlOutput, err error)
 }
