@@ -9,6 +9,7 @@ import (
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/service/bank_account"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/service/consumer"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/service/product"
+	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/service/transaction"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/util/pagination"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/util/primitive"
 	"github.com/go-playground/validator/v10"
@@ -24,6 +25,7 @@ type restApi struct {
 	consumerService    consumer.Service
 	bankAccountService bank_account.Service
 	productService     product.Service
+	transactionService transaction.Service
 }
 
 func New(dependency *service.Dependency) *restApi {
@@ -39,6 +41,7 @@ func New(dependency *service.Dependency) *restApi {
 		consumerService:    dependency.ConsumerService,
 		bankAccountService: dependency.BankAccountService,
 		productService:     dependency.ProductService,
+		transactionService: dependency.TransactionService,
 	}
 }
 

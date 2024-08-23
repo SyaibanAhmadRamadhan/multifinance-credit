@@ -363,8 +363,90 @@ paths:
                 $ref: '#/components/schemas/Error'
       tags:
         - product
+  /v1/transaction:
+    post:
+      operationId: V1TransactionPost
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V1TransactionPostRequestBody'
+      responses:
+        200:
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1TransactionPostResponseBody'
+        '400':
+          description: BAD_REQUEST
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '500':
+          description: INTERNAL SERVER ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: NOT FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: UNPROCESSABLE ENTITY
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+        - transaction
 components:
   schemas:
+    V1TransactionPostResponseBody:
+      type: object
+      properties:
+        transaction_id:
+          type: integer
+          format: int64
+      required:
+        - transaction_id
+    V1TransactionPostRequestBody:
+      type: object
+      properties:
+        limit_id:
+          type: integer
+          format: int64
+          x-oapi-codegen-extra-tags:
+            binding: required
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/V1TransactionPostRequestBodyProductItem'
+          x-oapi-codegen-extra-tags:
+            binding: min=1,dive
+      required:
+        - limit_id
+        - products
+    V1TransactionPostRequestBodyProductItem:
+      type: object
+      properties:
+        product_id:
+          type: integer
+          format: int64
+          x-oapi-codegen-extra-tags:
+            binding: required
+        qty:
+          type: integer
+          format: int64
+          x-oapi-codegen-extra-tags:
+            binding: required
+      required:
+        - product_id
+        - qty
     V1ProductPostRequestBody:
       type: object
       properties:

@@ -53,7 +53,7 @@ type SqlxWrapper struct {
 	attrs         []attribute.KeyValue
 }
 
-func (s *SqlxWrapper) QueryxContext(ctx context.Context, query string, arg ...interface{}) (*sqlx.Rows, error) {
+func (s *SqlxWrapper) QueryxContext(ctx context.Context, query string, arg ...interface{}) (*sqlx.Rows, *sqlx.Stmt, error) {
 	opts := []trace.SpanStartOption{
 		trace.WithSpanKind(trace.SpanKindClient),
 		trace.WithAttributes(s.attrs...),
@@ -67,16 +67,8 @@ func (s *SqlxWrapper) QueryxContext(ctx context.Context, query string, arg ...in
 	stmt, err := s.queryExecutor.PreparexContext(ctx, query)
 	if err != nil {
 		recordError(span, err)
-		return nil, err
+		return nil, nil, err
 	}
-	defer func(stmt *sqlx.Stmt) {
-		if errCloseStmt := stmt.Close(); errCloseStmt != nil {
-			span.RecordError(err)
-			span.SetStatus(codes.Error, err.Error())
-		} else {
-			span.SetStatus(codes.Ok, "Close Prepared Statement Successfully")
-		}
-	}(stmt)
 
 	spanName = "sqlx: Query Multiple Rows"
 	ctx, spanQueryx := s.tracer.Start(ctx, spanName, []trace.SpanStartOption{
@@ -90,10 +82,10 @@ func (s *SqlxWrapper) QueryxContext(ctx context.Context, query string, arg ...in
 	res, err := stmt.QueryxContext(ctx, arg...)
 	if err != nil {
 		recordError(spanQueryx, err)
-		return nil, err
+		return nil, nil, err
 	}
 
-	return res, nil
+	return res, stmt, nil
 }
 
 func (s *SqlxWrapper) ExecContext(ctx context.Context, query string, arg ...interface{}) (sql.Result, error) {
@@ -139,7 +131,7 @@ func (s *SqlxWrapper) ExecContext(ctx context.Context, query string, arg ...inte
 	return res, nil
 }
 
-func (s *SqlxWrapper) QueryRowxContext(ctx context.Context, query string, arg ...interface{}) (*sqlx.Row, error) {
+func (s *SqlxWrapper) QueryRowxContext(ctx context.Context, query string, arg ...interface{}) (*sqlx.Row, *sqlx.Stmt, error) {
 	opts := []trace.SpanStartOption{
 		trace.WithSpanKind(trace.SpanKindClient),
 		trace.WithAttributes(s.attrs...),
@@ -153,16 +145,8 @@ func (s *SqlxWrapper) QueryRowxContext(ctx context.Context, query string, arg ..
 	stmt, err := s.queryExecutor.PreparexContext(ctx, query)
 	if err != nil {
 		recordError(span, err)
-		return nil, err
+		return nil, nil, err
 	}
-	defer func(stmt *sqlx.Stmt) {
-		if errCloseStmt := stmt.Close(); errCloseStmt != nil {
-			span.RecordError(errCloseStmt)
-			span.SetStatus(codes.Error, errCloseStmt.Error())
-		} else {
-			span.SetStatus(codes.Ok, "Close Prepared Statement Successfully")
-		}
-	}(stmt)
 
 	spanName = "sqlx: Query Single Row"
 	ctx, spanQueryx := s.tracer.Start(ctx, spanName, []trace.SpanStartOption{
@@ -175,5 +159,5 @@ func (s *SqlxWrapper) QueryRowxContext(ctx context.Context, query string, arg ..
 
 	res := stmt.QueryRowxContext(ctx, arg...)
 
-	return res, nil
+	return res, stmt, nil
 }
