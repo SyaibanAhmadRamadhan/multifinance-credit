@@ -20,7 +20,7 @@ func Test_repository_Creates(t *testing.T) {
 	ctx := context.TODO()
 	sqlxDB := sqlx.NewDb(dbMock, "sqlmock")
 
-	sqlxx := db.NewSqlxWrapper(sqlxDB)
+	sqlxx := db.NewRdbms(sqlxDB)
 
 	r := limits.NewRepository(sqlxx)
 
@@ -41,9 +41,9 @@ func Test_repository_Creates(t *testing.T) {
 			},
 		}
 
-		mock.ExpectPrepare(regexp.QuoteMeta(
+		mock.ExpectExec(regexp.QuoteMeta(
 			`INSERT INTO limits (consumer_id,tenor,amount,remaining_amount) VALUES (?,?,?,?),(?,?,?,?)`,
-		)).ExpectExec().WithArgs(
+		)).WithArgs(
 			expectedInput.ConsumerID,
 			expectedInput.Items[0].Tenor,
 			expectedInput.Items[0].Amount,

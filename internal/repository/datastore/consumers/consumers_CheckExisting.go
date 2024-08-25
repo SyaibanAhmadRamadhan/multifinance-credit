@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/Masterminds/squirrel"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/util/tracer"
-	"github.com/rs/zerolog/log"
 )
 
 func (r *repository) CheckExisting(ctx context.Context, input CheckExistingInput) (output CheckExistingOutput, err error) {
@@ -22,15 +21,7 @@ func (r *repository) CheckExisting(ctx context.Context, input CheckExistingInput
 		return output, tracer.Error(err)
 	}
 
-	row, stmt, err := r.sqlx.QueryRowxContext(ctx, sql, args...)
-	if err != nil {
-		return output, tracer.Error(err)
-	}
-	defer func() {
-		if errClose := stmt.Close(); errClose != nil {
-			log.Err(errClose).Msg("failed closed stmt")
-		}
-	}()
+	row := r.sqlx.QueryRowxContext(ctx, sql, args...)
 
 	var existing bool
 	err = row.Scan(&existing)

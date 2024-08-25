@@ -7,9 +7,11 @@ import (
 )
 
 type SqlxTransaction interface {
-	DoTransaction(ctx context.Context, opt *sql.TxOptions, fn func(tx *SqlxWrapper) error) error
+	DoTransaction(ctx context.Context, opt *sql.TxOptions, fn func(tx Rdbms) error) error
 }
 
-type queryExecutor interface {
-	PreparexContext(ctx context.Context, query string) (*sqlx.Stmt, error)
+type Rdbms interface {
+	QueryxContext(ctx context.Context, query string, arg ...interface{}) (*sqlx.Rows, error)
+	ExecContext(ctx context.Context, query string, arg ...interface{}) (sql.Result, error)
+	QueryRowxContext(ctx context.Context, query string, args ...interface{}) *sqlx.Row
 }

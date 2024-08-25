@@ -14,7 +14,7 @@ import (
 	"reflect"
 )
 
-const TracerName = "db"
+const TracerName = "sqlx_tracer_otel"
 const InstrumentVersion = "v1.0.0"
 const (
 	DBStatement = attribute.Key("db_statement")
@@ -38,39 +38,23 @@ func makeParamAttr(args []any) attribute.KeyValue {
 	return Args.StringSlice(ss)
 }
 
-func NewSqlxWrapper(db queryExecutor) *SqlxWrapper {
+func NewRdbms(db Rdbms) *rdbms {
 	tp := otel.GetTracerProvider()
-	return &SqlxWrapper{
-		queryExecutor: db,
-		tracer:        tp.Tracer(TracerName, trace.WithInstrumentationVersion(InstrumentVersion)),
-		attrs:         []attribute.KeyValue{semconv.DBSystemMySQL},
+	return &rdbms{
+		db:     db,
+		tracer: tp.Tracer(TracerName, trace.WithInstrumentationVersion(InstrumentVersion)),
+		attrs:  []attribute.KeyValue{semconv.DBSystemMySQL},
 	}
 }
 
-type SqlxWrapper struct {
-	queryExecutor queryExecutor
-	tracer        trace.Tracer
-	attrs         []attribute.KeyValue
+type rdbms struct {
+	db     Rdbms
+	tracer trace.Tracer
+	attrs  []attribute.KeyValue
 }
 
-func (s *SqlxWrapper) QueryxContext(ctx context.Context, query string, arg ...interface{}) (*sqlx.Rows, *sqlx.Stmt, error) {
-	opts := []trace.SpanStartOption{
-		trace.WithSpanKind(trace.SpanKindClient),
-		trace.WithAttributes(s.attrs...),
-		trace.WithAttributes(DBStatement.String(query)),
-	}
-
-	spanName := "sqlx: Prepared Statement"
-	ctx, span := s.tracer.Start(ctx, spanName, opts...)
-	defer span.End()
-
-	stmt, err := s.queryExecutor.PreparexContext(ctx, query)
-	if err != nil {
-		recordError(span, err)
-		return nil, nil, err
-	}
-
-	spanName = "sqlx: Query Multiple Rows"
+func (s *rdbms) QueryxContext(ctx context.Context, query string, arg ...interface{}) (*sqlx.Rows, error) {
+	spanName := "sqlx: Query Multiple Rows"
 	ctx, spanQueryx := s.tracer.Start(ctx, spanName, []trace.SpanStartOption{
 		trace.WithSpanKind(trace.SpanKindClient),
 		trace.WithAttributes(s.attrs...),
@@ -79,41 +63,17 @@ func (s *SqlxWrapper) QueryxContext(ctx context.Context, query string, arg ...in
 	}...)
 	defer spanQueryx.End()
 
-	res, err := stmt.QueryxContext(ctx, arg...)
+	res, err := s.db.QueryxContext(ctx, query, arg...)
 	if err != nil {
 		recordError(spanQueryx, err)
-		return nil, nil, err
-	}
-
-	return res, stmt, nil
-}
-
-func (s *SqlxWrapper) ExecContext(ctx context.Context, query string, arg ...interface{}) (sql.Result, error) {
-	opts := []trace.SpanStartOption{
-		trace.WithSpanKind(trace.SpanKindClient),
-		trace.WithAttributes(s.attrs...),
-		trace.WithAttributes(DBStatement.String(query)),
-	}
-
-	spanName := "sqlx: Prepared Statement"
-	ctx, span := s.tracer.Start(ctx, spanName, opts...)
-	defer span.End()
-
-	stmt, err := s.queryExecutor.PreparexContext(ctx, query)
-	if err != nil {
-		recordError(span, err)
 		return nil, err
 	}
-	defer func(stmt *sqlx.Stmt) {
-		if errCloseStmt := stmt.Close(); errCloseStmt != nil {
-			span.RecordError(err)
-			span.SetStatus(codes.Error, err.Error())
-		} else {
-			span.SetStatus(codes.Ok, "Close Prepared Statement Successfully")
-		}
-	}(stmt)
 
-	spanName = "sqlx: Exec query"
+	return res, nil
+}
+
+func (s *rdbms) ExecContext(ctx context.Context, query string, arg ...interface{}) (sql.Result, error) {
+	spanName := "sqlx: Exec query"
 	ctx, spanExec := s.tracer.Start(ctx, spanName, []trace.SpanStartOption{
 		trace.WithSpanKind(trace.SpanKindClient),
 		trace.WithAttributes(s.attrs...),
@@ -122,7 +82,7 @@ func (s *SqlxWrapper) ExecContext(ctx context.Context, query string, arg ...inte
 	}...)
 	defer spanExec.End()
 
-	res, err := stmt.ExecContext(ctx, arg...)
+	res, err := s.db.ExecContext(ctx, query, arg...)
 	if err != nil {
 		recordError(spanExec, err)
 		return nil, err
@@ -131,24 +91,8 @@ func (s *SqlxWrapper) ExecContext(ctx context.Context, query string, arg ...inte
 	return res, nil
 }
 
-func (s *SqlxWrapper) QueryRowxContext(ctx context.Context, query string, arg ...interface{}) (*sqlx.Row, *sqlx.Stmt, error) {
-	opts := []trace.SpanStartOption{
-		trace.WithSpanKind(trace.SpanKindClient),
-		trace.WithAttributes(s.attrs...),
-		trace.WithAttributes(DBStatement.String(query)),
-	}
-
-	spanName := "sqlx: Prepared Statement"
-	ctx, span := s.tracer.Start(ctx, spanName, opts...)
-	defer span.End()
-
-	stmt, err := s.queryExecutor.PreparexContext(ctx, query)
-	if err != nil {
-		recordError(span, err)
-		return nil, nil, err
-	}
-
-	spanName = "sqlx: Query Single Row"
+func (s *rdbms) QueryRowxContext(ctx context.Context, query string, arg ...interface{}) *sqlx.Row {
+	spanName := "sqlx: Query Single Row"
 	ctx, spanQueryx := s.tracer.Start(ctx, spanName, []trace.SpanStartOption{
 		trace.WithSpanKind(trace.SpanKindClient),
 		trace.WithAttributes(s.attrs...),
@@ -157,7 +101,7 @@ func (s *SqlxWrapper) QueryRowxContext(ctx context.Context, query string, arg ..
 	}...)
 	defer spanQueryx.End()
 
-	res := stmt.QueryRowxContext(ctx, arg...)
+	res := s.db.QueryRowxContext(ctx, query, arg...)
 
-	return res, stmt, nil
+	return res
 }

@@ -22,7 +22,7 @@ func Test_repository_CheckExisting(t *testing.T) {
 	ctx := context.TODO()
 	sqlxDB := sqlx.NewDb(dbMock, "sqlmock")
 
-	sqlxx := db.NewSqlxWrapper(sqlxDB)
+	sqlxx := db.NewRdbms(sqlxDB)
 
 	r := users.NewRepository(sqlxx)
 
@@ -32,9 +32,8 @@ func Test_repository_CheckExisting(t *testing.T) {
 			ByEmail: null.StringFrom(faker.Email()),
 		}
 
-		mock.ExpectPrepare(regexp.QuoteMeta(
+		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT EXISTS( SELECT 1 FROM users WHERE id = ? AND email = ? )`)).
-			ExpectQuery().
 			WithArgs(expectedInput.ByID.Int64, expectedInput.ByEmail.String).
 			WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
 
@@ -51,9 +50,8 @@ func Test_repository_CheckExisting(t *testing.T) {
 			ByEmail: null.StringFrom(faker.Email()),
 		}
 
-		mock.ExpectPrepare(regexp.QuoteMeta(
+		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT EXISTS( SELECT 1 FROM users WHERE id = ? AND email = ? )`)).
-			ExpectQuery().
 			WithArgs(expectedInput.ByID.Int64, expectedInput.ByEmail.String).
 			WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(false))
 

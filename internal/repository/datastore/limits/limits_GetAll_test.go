@@ -22,7 +22,7 @@ func Test_repository_GetAll(t *testing.T) {
 	ctx := context.TODO()
 	sqlxDB := sqlx.NewDb(dbMock, "sqlmock")
 
-	sqlxx := db.NewSqlxWrapper(sqlxDB)
+	sqlxx := db.NewRdbms(sqlxDB)
 
 	r := limits.NewRepository(sqlxx)
 
@@ -56,14 +56,14 @@ func Test_repository_GetAll(t *testing.T) {
 			},
 		}
 
-		mock.ExpectPrepare(regexp.QuoteMeta(
+		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT COUNT(*) FROM limits WHERE consumer_id = ?`,
-		)).ExpectQuery().WithArgs(expectedInput.ConsumerID.Int64).
+		)).WithArgs(expectedInput.ConsumerID.Int64).
 			WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(expectedTotalData))
 
-		mock.ExpectPrepare(regexp.QuoteMeta(
+		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT id, consumer_id, tenor, amount FROM limits WHERE consumer_id = ? ORDER BY id DESC LIMIT 2`,
-		)).ExpectQuery().WithArgs(expectedInput.ConsumerID.Int64).
+		)).WithArgs(expectedInput.ConsumerID.Int64).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "consumer_id", "tenor", "amount"}).
 				AddRow(
 					expectedOutput.Items[0].ID,

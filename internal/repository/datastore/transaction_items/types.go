@@ -5,7 +5,7 @@ import (
 )
 
 type CreatesInput struct {
-	Transaction   *db.SqlxWrapper
+	Transaction   db.Rdbms
 	TransactionID int64
 	Items         []CreatesItemInput
 }

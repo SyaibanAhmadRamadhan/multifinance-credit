@@ -76,7 +76,7 @@ func (s *service) Register(ctx context.Context, input RegisterInput) (output Reg
 	}
 
 	err = s.dbTx.DoTransaction(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted, ReadOnly: false},
-		func(tx *db.SqlxWrapper) (err error) {
+		func(tx db.Rdbms) (err error) {
 			createUserOutput, err := s.userRepository.Create(ctx, users.CreateInput{
 				Transaction: tx,
 				Email:       input.Email,

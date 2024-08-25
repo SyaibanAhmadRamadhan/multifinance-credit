@@ -36,7 +36,7 @@ type NewDependencyOpts struct {
 }
 
 func NewDependency(opts NewDependencyOpts) *Dependency {
-	sqlxWrapper := db.NewSqlxWrapper(opts.SqlxDB)
+	sqlxWrapper := db.NewRdbms(opts.SqlxDB)
 	sqlxTransaction := db.NewSqlxTransaction(opts.SqlxDB)
 
 	// REPOSITORY LAYER

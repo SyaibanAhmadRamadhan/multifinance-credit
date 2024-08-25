@@ -23,7 +23,7 @@ func Test_repository_GetAll(t *testing.T) {
 	ctx := context.TODO()
 	sqlxDB := sqlx.NewDb(dbMock, "sqlmock")
 
-	sqlxx := db.NewSqlxWrapper(sqlxDB)
+	sqlxx := db.NewRdbms(sqlxDB)
 
 	r := products.NewRepository(sqlxx)
 
@@ -62,14 +62,14 @@ func Test_repository_GetAll(t *testing.T) {
 			},
 		}
 
-		mock.ExpectPrepare(regexp.QuoteMeta(
+		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT COUNT(*) FROM products WHERE merchant_id = ? AND id IN (?,?)`,
-		)).ExpectQuery().WithArgs(expectedInput.MerchantID.Int64, expectedInput.IDs[0], expectedInput.IDs[1]).
+		)).WithArgs(expectedInput.MerchantID.Int64, expectedInput.IDs[0], expectedInput.IDs[1]).
 			WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(expectedTotalData))
 
-		mock.ExpectPrepare(regexp.QuoteMeta(
+		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT id, merchant_id, name, image, qty, price FROM products WHERE merchant_id = ? AND id IN (?,?) ORDER BY id DESC LIMIT 2 OFFSET 0`,
-		)).ExpectQuery().WithArgs(expectedInput.MerchantID.Int64, expectedInput.IDs[0], expectedInput.IDs[1]).
+		)).WithArgs(expectedInput.MerchantID.Int64, expectedInput.IDs[0], expectedInput.IDs[1]).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "merchant_id", "name", "image", "qty", "price"}).
 				AddRow(
 					expectedOutput.Items[0].ID,
@@ -130,14 +130,14 @@ func Test_repository_GetAll(t *testing.T) {
 			},
 		}
 
-		mock.ExpectPrepare(regexp.QuoteMeta(
+		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT COUNT(*) FROM products WHERE merchant_id = ? AND id IN (?,?)`,
-		)).ExpectQuery().WithArgs(expectedInput.MerchantID.Int64, expectedInput.IDs[0], expectedInput.IDs[1]).
+		)).WithArgs(expectedInput.MerchantID.Int64, expectedInput.IDs[0], expectedInput.IDs[1]).
 			WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(expectedTotalData))
 
-		mock.ExpectPrepare(regexp.QuoteMeta(
+		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT id, merchant_id, name, image, qty, price FROM products WHERE merchant_id = ? AND id IN (?,?) ORDER BY id DESC LIMIT 2 OFFSET 0 FOR update`,
-		)).ExpectQuery().WithArgs(expectedInput.MerchantID.Int64, expectedInput.IDs[0], expectedInput.IDs[1]).
+		)).WithArgs(expectedInput.MerchantID.Int64, expectedInput.IDs[0], expectedInput.IDs[1]).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "merchant_id", "name", "image", "qty", "price"}).
 				AddRow(
 					expectedOutput.Items[0].ID,

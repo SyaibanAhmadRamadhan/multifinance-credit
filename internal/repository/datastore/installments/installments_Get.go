@@ -7,7 +7,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/repository/datastore"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/util/tracer"
-	"github.com/rs/zerolog/log"
 )
 
 func (r *repository) Get(ctx context.Context, input GetInput) (output GetOutput, err error) {
@@ -23,15 +22,7 @@ func (r *repository) Get(ctx context.Context, input GetInput) (output GetOutput,
 		return output, tracer.Error(err)
 	}
 
-	row, stmt, err := r.sqlx.QueryRowxContext(ctx, rawQuery, args...)
-	if err != nil {
-		return output, tracer.Error(err)
-	}
-	defer func() {
-		if errClose := stmt.Close(); errClose != nil {
-			log.Err(errClose).Msg("failed closed stmt")
-		}
-	}()
+	row := r.sqlx.QueryRowxContext(ctx, rawQuery, args...)
 	
 	err = row.StructScan(&output)
 	if err != nil {

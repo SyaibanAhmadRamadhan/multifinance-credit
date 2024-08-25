@@ -4,6 +4,7 @@ CREATE TABLE limits
     consumer_id INT NOT NULL,
     tenor       INT NOT NULL,
     amount DOUBLE NOT NULL,
+    remaining_amount DOUBLE NOT NULL,
 
     FOREIGN KEY (consumer_id) REFERENCES consumers (id) ON DELETE CASCADE
 );

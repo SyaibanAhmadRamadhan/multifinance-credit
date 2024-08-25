@@ -136,8 +136,8 @@ func Test_service_Register(t *testing.T) {
 			Isolation: sql.LevelReadCommitted,
 			ReadOnly:  false,
 		}, gomock.Any()).DoAndReturn(
-			func(ctx context.Context, tx *sql.TxOptions, fn func(tx *db.SqlxWrapper) error) error {
-				mockSqlxWrapper := &db.SqlxWrapper{}
+			func(ctx context.Context, tx *sql.TxOptions, fn func(tx db.Rdbms) error) error {
+				mockSqlxWrapper := db.NewRdbms(nil)
 
 				createInputStructMatcher := extra.StructMatcher().
 					Field("Transaction", mockSqlxWrapper).

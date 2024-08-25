@@ -20,7 +20,7 @@ type GetOutput struct {
 }
 
 type CreatesInput struct {
-	Transaction *db.SqlxWrapper
+	Transaction db.Rdbms
 	Items       []CreatesInputItem
 }
 
