@@ -15,7 +15,7 @@ type CheckExistingOutput struct {
 }
 
 type CreateInput struct {
-	Transaction *db.SqlxWrapper
+	Transaction db.Rdbms
 	Email       string
 	Password    string
 }

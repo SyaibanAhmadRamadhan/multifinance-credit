@@ -2,11 +2,11 @@ CREATE TABLE installments
 (
     id                INT AUTO_INCREMENT PRIMARY KEY,
     limit_id          INT          NOT NULL,
-    payment_method_id INT          NULL,
-    contract_number   BIGINT          NOT NULL,
+    payment_method_id INT NULL,
+    contract_number   BIGINT       NOT NULL,
     amount DOUBLE NOT NULL,
     due_date          TIMESTAMP    NOT NULL,
-    payment_date      TIMESTAMP    NOT NULL,
+    payment_date      TIMESTAMP,
     status            VARCHAR(255) NOT NULL,
 
     FOREIGN KEY (limit_id) REFERENCES limits (id) ON DELETE CASCADE,

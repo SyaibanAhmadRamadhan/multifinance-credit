@@ -7,7 +7,7 @@ import (
 )
 
 type GetInput struct {
-	Tx         *db.SqlxWrapper
+	Tx         db.Rdbms
 	Locking    db.Locking
 	ID         null.Int
 	Tenor      null.Int32
@@ -23,7 +23,7 @@ type GetOutput struct {
 }
 
 type CreatesInput struct {
-	Transaction *db.SqlxWrapper
+	Transaction db.Rdbms
 	ConsumerID  int64
 	Items       []CreatesInputItem
 }
@@ -51,7 +51,7 @@ type GetAllOutputItem struct {
 }
 
 type UpdateInput struct {
-	Transaction     *db.SqlxWrapper
+	Transaction     db.Rdbms
 	ID              int64
 	RemainingAmount float64
 }

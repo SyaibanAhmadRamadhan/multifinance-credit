@@ -25,7 +25,7 @@ func Test_repository_Get(t *testing.T) {
 	ctx := context.TODO()
 	sqlxDB := sqlx.NewDb(dbMock, "sqlmock")
 
-	sqlxx := db.NewSqlxWrapper(sqlxDB)
+	sqlxx := db.NewRdbms(sqlxDB)
 
 	r := consumers.NewRepository(sqlxx)
 
@@ -47,10 +47,10 @@ func Test_repository_Get(t *testing.T) {
 			PhotoSelfie:  faker.UUIDDigit(),
 		}
 
-		mock.ExpectPrepare(regexp.QuoteMeta(
+		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT id, user_id, nik, full_name, legal_name, place_of_birth, date_of_birth, salary, photo_ktp, photo_selfie 
 					FROM consumers WHERE user_id = ? AND id = ?`,
-		)).ExpectQuery().WithArgs(expectedInput.UserID.Int64, expectedInput.ID.Int64).
+		)).WithArgs(expectedInput.UserID.Int64, expectedInput.ID.Int64).
 			WillReturnRows(sqlmock.NewRows([]string{
 				"id", "user_id", "nik", "full_name", "legal_name", "place_of_birth", "date_of_birth", "salary", "photo_ktp", "photo_selfie",
 			}).AddRow(
@@ -71,10 +71,10 @@ func Test_repository_Get(t *testing.T) {
 			UserID: null.IntFrom(rand.Int63()),
 		}
 
-		mock.ExpectPrepare(regexp.QuoteMeta(
+		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT id, user_id, nik, full_name, legal_name, place_of_birth, date_of_birth, salary, photo_ktp, photo_selfie 
 					FROM consumers WHERE user_id = ? AND id = ?`,
-		)).ExpectQuery().WithArgs(expectedInput.UserID.Int64, expectedInput.ID.Int64).
+		)).WithArgs(expectedInput.UserID.Int64, expectedInput.ID.Int64).
 			WillReturnError(sql.ErrNoRows)
 
 		output, err := r.Get(ctx, expectedInput)

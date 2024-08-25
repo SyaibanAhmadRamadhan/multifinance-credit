@@ -20,7 +20,7 @@ func Test_repository_Update(t *testing.T) {
 	ctx := context.TODO()
 	sqlxDB := sqlx.NewDb(dbMock, "sqlmock")
 
-	sqlxx := db.NewSqlxWrapper(sqlxDB)
+	sqlxx := db.NewRdbms(sqlxDB)
 
 	r := limits.NewRepository(sqlxx)
 
@@ -30,9 +30,9 @@ func Test_repository_Update(t *testing.T) {
 			RemainingAmount: rand.Float64(),
 		}
 
-		mock.ExpectPrepare(regexp.QuoteMeta(
+		mock.ExpectExec(regexp.QuoteMeta(
 			`UPDATE limits SET remaining_amount = ? WHERE id = ?`,
-		)).ExpectExec().WithArgs(expectedInput.RemainingAmount, expectedInput.ID).
+		)).WithArgs(expectedInput.RemainingAmount, expectedInput.ID).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		err = r.Update(ctx, expectedInput)

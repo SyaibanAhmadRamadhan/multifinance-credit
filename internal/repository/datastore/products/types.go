@@ -20,7 +20,7 @@ type GetOutput struct {
 }
 
 type CreatesInput struct {
-	Transaction *db.SqlxWrapper
+	Transaction db.Rdbms
 	MerchantID  int64
 	Items       []CreatesInputItem
 }
@@ -34,7 +34,7 @@ type CreatesInputItem struct {
 
 type GetAllInput struct {
 	Locking     db.Locking
-	Transaction *db.SqlxWrapper
+	Transaction db.Rdbms
 	MerchantID  null.Int
 	IDs         []int64
 	Pagination  pagination.PaginationInput
@@ -55,7 +55,7 @@ type GetAllOutputItem struct {
 }
 
 type UpdatesInput struct {
-	Transaction *db.SqlxWrapper
+	Transaction db.Rdbms
 	Items       []UpdatesInputItem
 }
 

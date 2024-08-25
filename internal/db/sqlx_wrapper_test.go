@@ -18,20 +18,18 @@ func Test_sqlxWrapper_Queryx(t *testing.T) {
 	ctx := context.TODO()
 	sqlxDB := sqlx.NewDb(dbMock, "sqlmock")
 
-	sqlxx := db.NewSqlxWrapper(sqlxDB)
+	sqlxx := db.NewRdbms(sqlxDB)
 
 	t.Run("should return correct  Queryx result", func(t *testing.T) {
 		expectedQuery := `SELECT * FROM "users" WHERE id = ?`
 
-		mock.ExpectPrepare(regexp.QuoteMeta(`SELECT * FROM "users" WHERE id = ?`)).
-			ExpectQuery().
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "users" WHERE id = ?`)).
 			WithArgs(1).
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 
-		res, stmt, err := sqlxx.QueryxContext(ctx, expectedQuery, 1)
+		res, err := sqlxx.QueryxContext(ctx, expectedQuery, 1)
 		require.NoError(t, err)
 		defer res.Close()
-		defer stmt.Close()
 
 		for res.Next() {
 			var id int
@@ -46,14 +44,11 @@ func Test_sqlxWrapper_Queryx(t *testing.T) {
 	t.Run("should return correct  QueryRowx result", func(t *testing.T) {
 		expectedQuery := `SELECT * FROM "users" WHERE id = ?`
 
-		mock.ExpectPrepare(regexp.QuoteMeta(`SELECT * FROM "users" WHERE id = ?`)).
-			ExpectQuery().
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "users" WHERE id = ?`)).
 			WithArgs(1).
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 
-		res, stmt, err := sqlxx.QueryRowxContext(ctx, expectedQuery, 1)
-		require.NoError(t, err)
-		defer stmt.Close()
+		res := sqlxx.QueryRowxContext(ctx, expectedQuery, 1)
 
 		var id int
 		err = res.Scan(&id)
@@ -66,8 +61,7 @@ func Test_sqlxWrapper_Queryx(t *testing.T) {
 	t.Run("should return correct  ExecContext result", func(t *testing.T) {
 		expectedQuery := `INSERT INTO "users"(id) VALUES (?)`
 
-		mock.ExpectPrepare(regexp.QuoteMeta(expectedQuery)).
-			ExpectExec().
+		mock.ExpectExec(regexp.QuoteMeta(expectedQuery)).
 			WithArgs(1).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 

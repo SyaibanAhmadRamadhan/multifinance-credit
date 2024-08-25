@@ -30,7 +30,7 @@ func (s *service) Create(ctx context.Context, input CreateInput) (output CreateO
 	err = s.dbTx.DoTransaction(ctx, &sql.TxOptions{
 		Isolation: sql.LevelReadCommitted,
 		ReadOnly:  false,
-	}, func(tx *db.SqlxWrapper) (err error) {
+	}, func(tx db.Rdbms) (err error) {
 		// GET DATA LIMIT
 		limitOutput, err := s.limitRepository.Get(ctx, limits.GetInput{
 			Tx:         tx,

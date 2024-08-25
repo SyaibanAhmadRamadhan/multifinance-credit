@@ -1,10 +1,9 @@
--- Buat tabel 'products'
 CREATE TABLE products
 (
     id          SERIAL PRIMARY KEY,
-    merchant_id INTEGER NOT NULL,
+    name        varchar(255) not null,
+    merchant_id INTEGER      NOT NULL,
     image       VARCHAR(255),
-    queryParamBindToStruct        VARCHAR(255),
     qty         INTEGER,
     price       DOUBLE PRECISION,
     CONSTRAINT fk_merchant

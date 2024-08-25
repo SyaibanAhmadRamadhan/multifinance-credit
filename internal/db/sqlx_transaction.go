@@ -23,7 +23,7 @@ type sqlxTransaction struct {
 	tracer trace.Tracer
 }
 
-func (s *sqlxTransaction) DoTransaction(ctx context.Context, opt *sql.TxOptions, fn func(tx *SqlxWrapper) (err error)) (err error) {
+func (s *sqlxTransaction) DoTransaction(ctx context.Context, opt *sql.TxOptions, fn func(tx Rdbms) (err error)) (err error) {
 	opts := []trace.SpanStartOption{
 		trace.WithSpanKind(trace.SpanKindClient),
 		trace.WithAttributes(attribute.String("sqlx.isolation.level", opt.Isolation.String())),
@@ -59,7 +59,7 @@ func (s *sqlxTransaction) DoTransaction(ctx context.Context, opt *sql.TxOptions,
 		}
 	}()
 
-	sqlxWrapper := NewSqlxWrapper(tx)
+	sqlxWrapper := NewRdbms(tx)
 
 	err = fn(sqlxWrapper)
 	return

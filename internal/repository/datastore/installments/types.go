@@ -23,7 +23,7 @@ type GetOutput struct {
 }
 
 type CreatesInput struct {
-	Transaction      *db.SqlxWrapper
+	Transaction    db.Rdbms
 	LimitID        int64
 	ContractNumber int64
 	Items          []CreatesInputItem

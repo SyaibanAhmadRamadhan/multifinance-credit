@@ -25,7 +25,7 @@ func Test_sqlxTransaction_DoTransaction(t *testing.T) {
 		mock.ExpectBegin()
 		mock.ExpectCommit()
 
-		err = sqlxx.DoTransaction(ctx, &sql.TxOptions{}, func(tx *db.SqlxWrapper) (err error) {
+		err = sqlxx.DoTransaction(ctx, &sql.TxOptions{}, func(tx db.Rdbms) (err error) {
 			return nil
 		})
 		require.NoError(t, err)
@@ -37,7 +37,7 @@ func Test_sqlxTransaction_DoTransaction(t *testing.T) {
 		mock.ExpectBegin()
 		mock.ExpectRollback()
 
-		err = sqlxx.DoTransaction(ctx, &sql.TxOptions{}, func(tx *db.SqlxWrapper) (err error) {
+		err = sqlxx.DoTransaction(ctx, &sql.TxOptions{}, func(tx db.Rdbms) (err error) {
 			return errors.New("error")
 		})
 		require.Error(t, err)

@@ -21,7 +21,7 @@ func (s *service) Creates(ctx context.Context, input CreatesInput) (err error) {
 	err = s.dbTx.DoTransaction(ctx, &sql.TxOptions{
 		Isolation: sql.LevelReadCommitted,
 		ReadOnly:  false,
-	}, func(tx *db.SqlxWrapper) error {
+	}, func(tx db.Rdbms) error {
 
 		for i, items := range itemBatches {
 			createsBankAccountItems := make([]bank_accounts.CreatesInputItem, 0)

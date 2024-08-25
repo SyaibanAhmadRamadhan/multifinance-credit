@@ -21,7 +21,7 @@ func Test_repository_Creates(t *testing.T) {
 	ctx := context.TODO()
 	sqlxDB := sqlx.NewDb(dbMock, "sqlmock")
 
-	sqlxx := db.NewSqlxWrapper(sqlxDB)
+	sqlxx := db.NewRdbms(sqlxDB)
 
 	r := transaction_items.NewRepository(sqlxx)
 
@@ -40,9 +40,9 @@ func Test_repository_Creates(t *testing.T) {
 			},
 		}
 
-		mock.ExpectPrepare(regexp.QuoteMeta(
+		mock.ExpectExec(regexp.QuoteMeta(
 			`INSERT INTO transaction_items (transaction_id,merchant_id,name,image,qty,unit_price,amount) VALUES (?,?,?,?,?,?,?)`,
-		)).ExpectExec().WithArgs(
+		)).WithArgs(
 			expectedInput.TransactionID,
 			expectedInput.Items[0].MerchantID,
 			expectedInput.Items[0].Name,
