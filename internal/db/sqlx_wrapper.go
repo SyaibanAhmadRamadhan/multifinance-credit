@@ -5,7 +5,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/jmoiron/sqlx"
+	"github.com/Masterminds/squirrel"
+	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/repository/datastore"
+	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/util/pagination"
+	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/util/tracer"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -38,7 +41,7 @@ func makeParamAttr(args []any) attribute.KeyValue {
 	return Args.StringSlice(ss)
 }
 
-func NewRdbms(db Rdbms) *rdbms {
+func NewRdbms(db queryExecutor) *rdbms {
 	tp := otel.GetTracerProvider()
 	return &rdbms{
 		db:     db,
@@ -48,33 +51,64 @@ func NewRdbms(db Rdbms) *rdbms {
 }
 
 type rdbms struct {
-	db     Rdbms
+	db     queryExecutor
 	tracer trace.Tracer
 	attrs  []attribute.KeyValue
 }
 
-func (s *rdbms) QueryxContext(ctx context.Context, query string, arg ...interface{}) (*sqlx.Rows, error) {
-	spanName := "sqlx: Query Multiple Rows"
-	ctx, spanQueryx := s.tracer.Start(ctx, spanName, []trace.SpanStartOption{
+func (s *rdbms) Query(ctx context.Context, query squirrel.SelectBuilder, callback callbackRows) error {
+	rawQuery, args, err := query.ToSql()
+	if err != nil {
+		return tracer.Error(err)
+	}
+
+	ctx, spanQueryx := s.tracer.Start(ctx, rawQuery, []trace.SpanStartOption{
 		trace.WithSpanKind(trace.SpanKindClient),
 		trace.WithAttributes(s.attrs...),
-		trace.WithAttributes(DBStatement.String(query)),
-		trace.WithAttributes(makeParamAttr(arg)),
+		trace.WithAttributes(DBStatement.String(rawQuery)),
+		trace.WithAttributes(makeParamAttr(args)),
 	}...)
 	defer spanQueryx.End()
 
-	res, err := s.db.QueryxContext(ctx, query, arg...)
+	res, err := s.db.QueryxContext(ctx, rawQuery, args...)
 	if err != nil {
 		recordError(spanQueryx, err)
-		return nil, err
+		return err
+	}
+	defer func() {
+		if errClose := res.Close(); errClose != nil {
+			recordError(spanQueryx, errClose)
+		} else {
+			spanQueryx.SetAttributes(attribute.String("db_closed_rows", "successfully"))
+		}
+	}()
+
+	return callback(res)
+}
+
+func (s *rdbms) QueryPagination(ctx context.Context, countQuery, query squirrel.SelectBuilder, paginationInput pagination.PaginationInput, callback callbackRows) (
+	pagination.PaginationOutput, error) {
+
+	offset := pagination.GetOffsetValue(paginationInput.Page, paginationInput.PageSize)
+	query = query.Limit(uint64(paginationInput.PageSize))
+	query = query.Offset(uint64(offset))
+
+	totalData := int64(0)
+	err := s.QueryRow(ctx, countQuery, QueryRowScanTypeDefault, &totalData)
+	if err != nil {
+		return pagination.PaginationOutput{}, tracer.Error(err)
 	}
 
-	return res, nil
+	err = s.Query(ctx, query, callback)
+	if err != nil {
+		return pagination.PaginationOutput{}, tracer.Error(err)
+	}
+
+	return pagination.CreatePaginationOutput(paginationInput, totalData), nil
 }
 
 func (s *rdbms) ExecContext(ctx context.Context, query string, arg ...interface{}) (sql.Result, error) {
-	spanName := "sqlx: Exec query"
-	ctx, spanExec := s.tracer.Start(ctx, spanName, []trace.SpanStartOption{
+	ctx, spanExec := s.tracer.Start(ctx, query, []trace.SpanStartOption{
 		trace.WithSpanKind(trace.SpanKindClient),
 		trace.WithAttributes(s.attrs...),
 		trace.WithAttributes(DBStatement.String(query)),
@@ -91,17 +125,36 @@ func (s *rdbms) ExecContext(ctx context.Context, query string, arg ...interface{
 	return res, nil
 }
 
-func (s *rdbms) QueryRowxContext(ctx context.Context, query string, arg ...interface{}) *sqlx.Row {
-	spanName := "sqlx: Query Single Row"
-	ctx, spanQueryx := s.tracer.Start(ctx, spanName, []trace.SpanStartOption{
+func (s *rdbms) QueryRow(ctx context.Context, query squirrel.SelectBuilder, scanType QueryRowScanType, dest interface{}) error {
+	rawQuery, args, err := query.ToSql()
+	if err != nil {
+		return tracer.Error(err)
+	}
+
+	ctx, spanQueryx := s.tracer.Start(ctx, rawQuery, []trace.SpanStartOption{
 		trace.WithSpanKind(trace.SpanKindClient),
 		trace.WithAttributes(s.attrs...),
-		trace.WithAttributes(DBStatement.String(query)),
-		trace.WithAttributes(makeParamAttr(arg)),
+		trace.WithAttributes(DBStatement.String(rawQuery)),
+		trace.WithAttributes(makeParamAttr(args)),
 	}...)
 	defer spanQueryx.End()
 
-	res := s.db.QueryRowxContext(ctx, query, arg...)
+	res := s.db.QueryRowxContext(ctx, rawQuery, args...)
 
-	return res
+	switch scanType {
+	case QueryRowScanTypeStruct:
+		err = res.StructScan(dest)
+	default:
+		err = res.Scan(dest)
+	}
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = errors.Join(err, datastore.ErrRecordNotFound)
+		} else {
+			recordError(spanQueryx, err)
+		}
+
+		return tracer.Error(err)
+	}
+	return nil
 }
