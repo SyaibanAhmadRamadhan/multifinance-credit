@@ -81,11 +81,11 @@ func withOtel(next http.HandlerFunc, opts ...Option) http.HandlerFunc {
 		}
 
 		if recorder.logParams {
-			request = queryParamToSpan(request, request.URL.Query())
+			queryParamToSpan(request, request.URL.Query())
 		}
 
 		if recorder.logReqBody && (request.Method == http.MethodPost || request.Method == http.MethodPut) {
-			request, _ = addRequestBodyToSpan(request)
+			_ = addRequestBodyToSpan(request)
 		}
 
 		next.ServeHTTP(recorder, request)
@@ -109,31 +109,29 @@ func withOtel(next http.HandlerFunc, opts ...Option) http.HandlerFunc {
 	}
 }
 
-func queryParamToSpan(r *http.Request, attributes map[string][]string) *http.Request {
-	ctx, span := otelTracer.Start(r.Context(), "query parameter")
-	r = r.WithContext(ctx)
+func queryParamToSpan(r *http.Request, attributes map[string][]string) {
+	_, span := otelTracer.Start(r.Context(), "query parameter")
 	defer span.End()
 
 	otelAttributes := make([]attribute.KeyValue, 0, len(attributes))
 	for key, values := range attributes {
 		for _, value := range values {
-			otelAttributes = append(otelAttributes, attribute.String("request.query.params."+key, value))
+			otelAttributes = append(otelAttributes, attribute.String("request_query_params."+key, value))
 		}
 	}
 
 	span.SetAttributes(otelAttributes...)
 
-	return r
+	return
 }
 
-func addRequestBodyToSpan(r *http.Request) (*http.Request, error) {
-	ctx, span := otelTracer.Start(r.Context(), "request body")
-	r = r.WithContext(ctx)
+func addRequestBodyToSpan(r *http.Request) error {
+	_, span := otelTracer.Start(r.Context(), "request body")
 	defer span.End()
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		return r, err
+		return err
 	}
 	defer func() {
 		errReqBody := r.Body.Close()
@@ -144,19 +142,21 @@ func addRequestBodyToSpan(r *http.Request) (*http.Request, error) {
 
 	var requestBody map[string]any
 	if err = json.Unmarshal(body, &requestBody); err != nil {
-		return r, err
+		span.RecordError(err)
+		return err
 	}
 
 	r.Body = io.NopCloser(bytes.NewBuffer(body))
 
 	jsonString, err := json.Marshal(requestBody)
 	if err != nil {
-		return r, err
+		span.RecordError(err)
+		return err
 	}
 
-	span.SetAttributes(attribute.String("request.body.json", string(jsonString)))
+	span.SetAttributes(attribute.String("request_body_json", string(jsonString)))
 
-	return r, nil
+	return nil
 }
 
 func formatSize(size int) string {

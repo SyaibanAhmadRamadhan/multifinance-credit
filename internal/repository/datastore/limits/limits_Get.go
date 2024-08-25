@@ -2,11 +2,9 @@ package limits
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"fmt"
 	"github.com/Masterminds/squirrel"
-	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/repository/datastore"
+	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/db"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/util/tracer"
 )
 
@@ -30,18 +28,8 @@ func (r *repository) Get(ctx context.Context, input GetInput) (output GetOutput,
 		query = query.Where(squirrel.Eq{"tenor": input.Tenor.Int32})
 	}
 
-	rawQuery, args, err := query.ToSql()
+	err = rdbms.QueryRow(ctx, query, db.QueryRowScanTypeStruct, &output)
 	if err != nil {
-		return output, tracer.Error(err)
-	}
-
-	row := rdbms.QueryRowxContext(ctx, rawQuery, args...)
-
-	err = row.StructScan(&output)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			err = errors.Join(err, datastore.ErrRecordNotFound)
-		}
 		return output, tracer.Error(err)
 	}
 	return

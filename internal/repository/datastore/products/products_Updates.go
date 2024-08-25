@@ -29,7 +29,7 @@ func (r *repository) Updates(ctx context.Context, input UpdatesInput) (err error
 		return tracer.Error(err)
 	}
 
-	_, err = rdbms.ExecContext(ctx, rawQuery, args...)
+	_, err = rdbms.Exec(ctx, rawQuery, args...)
 	if err != nil {
 		return tracer.Error(err)
 	}
