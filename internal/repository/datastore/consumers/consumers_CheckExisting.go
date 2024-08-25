@@ -3,6 +3,7 @@ package consumers
 import (
 	"context"
 	"github.com/Masterminds/squirrel"
+	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/db"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/util/tracer"
 )
 
@@ -16,15 +17,10 @@ func (r *repository) CheckExisting(ctx context.Context, input CheckExistingInput
 		query = query.Where(squirrel.Eq{"id": input.ByID.Int64})
 	}
 
-	sql, args, err := query.Suffix(")").ToSql()
-	if err != nil {
-		return output, tracer.Error(err)
-	}
-
-	row := r.sqlx.QueryRowxContext(ctx, sql, args...)
+	query = query.Suffix(")")
 
 	var existing bool
-	err = row.Scan(&existing)
+	err = r.sqlx.QueryRow(ctx, query, db.QueryRowScanTypeDefault, &existing)
 	if err != nil {
 		return output, tracer.Error(err)
 	}

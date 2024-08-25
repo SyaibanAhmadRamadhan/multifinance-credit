@@ -3,12 +3,13 @@ package users
 import (
 	"context"
 	"github.com/Masterminds/squirrel"
+	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/db"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/util/tracer"
 )
 
 func (r *repository) CheckExisting(ctx context.Context, input CheckExistingInput) (output CheckExistingOutput, err error) {
 	query := r.sq.Select("1").Prefix("SELECT EXISTS(").
-		From("users")
+		From("users").Suffix(")")
 	if input.ByID.Valid {
 		query = query.Where(squirrel.Eq{"id": input.ByID.Int64})
 	}
@@ -16,15 +17,8 @@ func (r *repository) CheckExisting(ctx context.Context, input CheckExistingInput
 		query = query.Where(squirrel.Eq{"email": input.ByEmail.String})
 	}
 
-	sql, args, err := query.Suffix(")").ToSql()
-	if err != nil {
-		return output, tracer.Error(err)
-	}
-
-	row := r.sqlx.QueryRowxContext(ctx, sql, args...)
-
 	var existing bool
-	err = row.Scan(&existing)
+	err = r.sqlx.QueryRow(ctx, query, db.QueryRowScanTypeDefault, &existing)
 	if err != nil {
 		return output, tracer.Error(err)
 	}

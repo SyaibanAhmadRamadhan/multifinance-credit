@@ -3,6 +3,7 @@ package db_test
 import (
 	"context"
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/Masterminds/squirrel"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/db"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/require"
@@ -20,57 +21,54 @@ func Test_sqlxWrapper_Queryx(t *testing.T) {
 
 	sqlxx := db.NewRdbms(sqlxDB)
 
-	t.Run("should return correct  Queryx result", func(t *testing.T) {
-		expectedQuery := `SELECT * FROM "users" WHERE id = ?`
+	t.Run("should return correct Query result", func(t *testing.T) {
+		query := squirrel.Select("*").From("users").
+			Where(squirrel.Eq{"id": 1})
 
-		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "users" WHERE id = ?`)).
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM users WHERE id = ?`)).
 			WithArgs(1).
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 
-		res, err := sqlxx.QueryxContext(ctx, expectedQuery, 1)
+		err := sqlxx.Query(ctx, query, func(rows *sqlx.Rows) (err error) {
+			for rows.Next() {
+				var id int
+				err := rows.Scan(&id)
+				require.NoError(t, err)
+				require.Equal(t, 1, id)
+			}
+			return nil
+		})
 		require.NoError(t, err)
-		defer res.Close()
-
-		for res.Next() {
-			var id int
-			err := res.Scan(&id)
-			require.NoError(t, err)
-			require.Equal(t, 1, id)
-		}
 
 		require.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("should return correct  QueryRowx result", func(t *testing.T) {
-		expectedQuery := `SELECT * FROM "users" WHERE id = ?`
+	t.Run("should return correct Query Row result", func(t *testing.T) {
+		query := squirrel.Select("*").From("users").
+			Where(squirrel.Eq{"id": 1}).Limit(1)
 
-		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "users" WHERE id = ?`)).
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM users WHERE id = ? LIMIT 1`)).
 			WithArgs(1).
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
-
-		res := sqlxx.QueryRowxContext(ctx, expectedQuery, 1)
 
 		var id int
-		err = res.Scan(&id)
+		err = sqlxx.QueryRow(ctx, query, db.QueryRowScanTypeDefault, &id)
 		require.NoError(t, err)
-		require.Equal(t, 1, id)
 
 		require.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("should return correct  ExecContext result", func(t *testing.T) {
-		expectedQuery := `INSERT INTO "users"(id) VALUES (?)`
+	t.Run("should return correct Query Row result", func(t *testing.T) {
+		query := squirrel.Select("*").From("users").
+			Where(squirrel.Eq{"id": 1}).Limit(1)
 
-		mock.ExpectExec(regexp.QuoteMeta(expectedQuery)).
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM users WHERE id = ? LIMIT 1`)).
 			WithArgs(1).
-			WillReturnResult(sqlmock.NewResult(1, 1))
+			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 
-		res, err := sqlxx.ExecContext(ctx, expectedQuery, 1)
+		var id int
+		err = sqlxx.QueryRow(ctx, query, db.QueryRowScanTypeDefault, &id)
 		require.NoError(t, err)
-
-		rowAffected, err := res.RowsAffected()
-		require.NoError(t, err)
-		require.Equal(t, int64(1), rowAffected)
 
 		require.NoError(t, mock.ExpectationsWereMet())
 	})

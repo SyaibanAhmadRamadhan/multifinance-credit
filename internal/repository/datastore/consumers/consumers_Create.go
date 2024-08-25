@@ -24,7 +24,7 @@ func (r *repository) Create(ctx context.Context, input CreateInput) (output Crea
 		return output, tracer.Error(err)
 	}
 
-	res, err := rdbms.ExecContext(ctx, query, args...)
+	res, err := rdbms.Exec(ctx, query, args...)
 	if err != nil {
 		return output, tracer.Error(err)
 	}

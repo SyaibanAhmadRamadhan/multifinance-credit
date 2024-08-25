@@ -26,8 +26,8 @@ type sqlxTransaction struct {
 func (s *sqlxTransaction) DoTransaction(ctx context.Context, opt *sql.TxOptions, fn func(tx Rdbms) (err error)) (err error) {
 	opts := []trace.SpanStartOption{
 		trace.WithSpanKind(trace.SpanKindClient),
-		trace.WithAttributes(attribute.String("sqlx.isolation.level", opt.Isolation.String())),
-		trace.WithAttributes(attribute.Bool("sqlx.readonly", opt.ReadOnly)),
+		trace.WithAttributes(attribute.String("sqlx_isolation_level", opt.Isolation.String())),
+		trace.WithAttributes(attribute.Bool("sqlx_readonly", opt.ReadOnly)),
 	}
 
 	spanName := "sqlx: Begin Tx"
