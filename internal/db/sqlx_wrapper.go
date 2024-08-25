@@ -9,12 +9,22 @@ import (
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/repository/datastore"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/util/pagination"
 	"github.com/SyaibanAhmadRamadhan/multifinance-credit/internal/util/tracer"
+	"github.com/jmoiron/sqlx"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.opentelemetry.io/otel/trace"
 	"reflect"
+)
+
+type callbackRows func(rows *sqlx.Rows) (err error)
+
+type QueryRowScanType uint8
+
+const (
+	QueryRowScanTypeDefault QueryRowScanType = iota + 1
+	QueryRowScanTypeStruct
 )
 
 const TracerName = "sqlx_tracer_otel"
@@ -107,7 +117,7 @@ func (s *rdbms) QueryPagination(ctx context.Context, countQuery, query squirrel.
 	return pagination.CreatePaginationOutput(paginationInput, totalData), nil
 }
 
-func (s *rdbms) ExecContext(ctx context.Context, query string, arg ...interface{}) (sql.Result, error) {
+func (s *rdbms) Exec(ctx context.Context, query string, arg ...interface{}) (sql.Result, error) {
 	ctx, spanExec := s.tracer.Start(ctx, query, []trace.SpanStartOption{
 		trace.WithSpanKind(trace.SpanKindClient),
 		trace.WithAttributes(s.attrs...),
