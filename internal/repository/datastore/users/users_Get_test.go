@@ -24,7 +24,7 @@ func Test_repository_Get(t *testing.T) {
 	ctx := context.TODO()
 	sqlxDB := sqlx.NewDb(dbMock, "sqlmock")
 
-	sqlxx := db.NewSqlxWrapper(sqlxDB)
+	sqlxx := db.NewRdbms(sqlxDB)
 
 	r := users.NewRepository(sqlxx)
 
@@ -39,9 +39,9 @@ func Test_repository_Get(t *testing.T) {
 			Password: faker.Password(),
 		}
 
-		mock.ExpectPrepare(regexp.QuoteMeta(
+		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT id, email, password FROM users WHERE email = ? AND id = ?`,
-		)).ExpectQuery().WithArgs(expectedInput.Email.String, expectedInput.ID.Int64).
+		)).WithArgs(expectedInput.Email.String, expectedInput.ID.Int64).
 			WillReturnRows(sqlmock.NewRows([]string{
 				"id", "email", "password",
 			}).AddRow(
@@ -60,9 +60,9 @@ func Test_repository_Get(t *testing.T) {
 			Email: null.StringFrom(faker.Email()),
 		}
 
-		mock.ExpectPrepare(regexp.QuoteMeta(
+		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT id, email, password FROM users WHERE email = ? AND id = ?`,
-		)).ExpectQuery().WithArgs(expectedInput.Email.String, expectedInput.ID.Int64).
+		)).WithArgs(expectedInput.Email.String, expectedInput.ID.Int64).
 			WillReturnError(sql.ErrNoRows)
 
 		output, err := r.Get(ctx, expectedInput)

@@ -23,7 +23,7 @@ func Test_repository_GetAll(t *testing.T) {
 	ctx := context.TODO()
 	sqlxDB := sqlx.NewDb(dbMock, "sqlmock")
 
-	sqlxx := db.NewSqlxWrapper(sqlxDB)
+	sqlxx := db.NewRdbms(sqlxDB)
 
 	r := installments.NewRepository(sqlxx)
 
@@ -65,14 +65,14 @@ func Test_repository_GetAll(t *testing.T) {
 			},
 		}
 
-		mock.ExpectPrepare(regexp.QuoteMeta(
+		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT COUNT(*) FROM installments WHERE contract_number = ?`,
-		)).ExpectQuery().WithArgs(expectedInput.ContractNumber).
+		)).WithArgs(expectedInput.ContractNumber).
 			WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(expectedTotalData))
 
-		mock.ExpectPrepare(regexp.QuoteMeta(
+		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT id, limit_id, contract_number, amount, due_date, payment_date, status FROM installments WHERE contract_number = ? ORDER BY due_date ASC, id DESC LIMIT 2 OFFSET 0`,
-		)).ExpectQuery().WithArgs(expectedInput.ContractNumber).
+		)).WithArgs(expectedInput.ContractNumber).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "limit_id", "contract_number", "amount", "due_date", "payment_date", "status"}).
 				AddRow(
 					expectedOutput.Items[0].ID,

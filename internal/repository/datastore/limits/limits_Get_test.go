@@ -23,7 +23,7 @@ func Test_repository_Get(t *testing.T) {
 	ctx := context.TODO()
 	sqlxDB := sqlx.NewDb(dbMock, "sqlmock")
 
-	sqlxx := db.NewSqlxWrapper(sqlxDB)
+	sqlxx := db.NewRdbms(sqlxDB)
 
 	r := limits.NewRepository(sqlxx)
 
@@ -40,9 +40,9 @@ func Test_repository_Get(t *testing.T) {
 			RemainingAmount: rand.Float64(),
 		}
 
-		mock.ExpectPrepare(regexp.QuoteMeta(
+		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT id, consumer_id, tenor, amount, remaining_amount FROM limits WHERE id = ?`,
-		)).ExpectQuery().WithArgs(expectedInput.ID.Int64).
+		)).WithArgs(expectedInput.ID.Int64).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "consumer_id", "tenor", "amount", "remaining_amount"}).
 				AddRow(
 					expectedOutput.ID,
@@ -62,9 +62,9 @@ func Test_repository_Get(t *testing.T) {
 			ID: null.IntFrom(rand.Int63()),
 		}
 
-		mock.ExpectPrepare(regexp.QuoteMeta(
+		mock.ExpectQuery(regexp.QuoteMeta(
 			`SELECT id, consumer_id, tenor, amount, remaining_amount FROM limits WHERE id = ?`,
-		)).ExpectQuery().WithArgs(expectedInput.ID.Int64).
+		)).WithArgs(expectedInput.ID.Int64).
 			WillReturnError(sql.ErrNoRows)
 
 		output, err := r.Get(ctx, expectedInput)

@@ -7,7 +7,7 @@ import (
 )
 
 type CreateInput struct {
-	Transaction  *db.SqlxWrapper
+	Transaction  db.Rdbms
 	UserID       int64
 	Nik          string
 	FullName     string

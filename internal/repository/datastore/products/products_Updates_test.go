@@ -21,7 +21,7 @@ func Test_getItemIDs(t *testing.T) {
 	ctx := context.TODO()
 	sqlxDB := sqlx.NewDb(dbMock, "sqlmock")
 
-	sqlxx := db.NewSqlxWrapper(sqlxDB)
+	sqlxx := db.NewRdbms(sqlxDB)
 
 	r := products.NewRepository(sqlxx)
 
@@ -38,11 +38,10 @@ func Test_getItemIDs(t *testing.T) {
 				},
 			},
 		}
-		mock.ExpectPrepare(regexp.QuoteMeta(
+		mock.ExpectExec(regexp.QuoteMeta(
 			fmt.Sprintf(`UPDATE products SET qty = CASE id WHEN %d THEN %d WHEN %d THEN %d END WHERE id IN (?,?)`,
 				expectedInput.Items[0].ID, expectedInput.Items[0].Qty, expectedInput.Items[1].ID, expectedInput.Items[1].Qty),
-		)).ExpectExec().
-			WithArgs(expectedInput.Items[0].ID, expectedInput.Items[1].ID).
+		)).WithArgs(expectedInput.Items[0].ID, expectedInput.Items[1].ID).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		err = r.Updates(ctx, expectedInput)

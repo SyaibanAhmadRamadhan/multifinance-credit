@@ -33,7 +33,7 @@ type validateCreateOutput struct {
 }
 
 type processInsertDataTransactionAndUpdateProductInput struct {
-	tx             *db.SqlxWrapper
+	tx             db.Rdbms
 	products       []products.GetAllOutputItem
 	createInput    CreateInput
 	contractNumber int64
@@ -47,5 +47,5 @@ type processInstallmentAndUpdateLimitInput struct {
 	limit          limits.GetOutput
 	contractNumber int64
 	startingTenor  time.Month
-	tx             *db.SqlxWrapper
+	tx             db.Rdbms
 }

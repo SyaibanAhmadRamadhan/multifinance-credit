@@ -72,8 +72,8 @@ func Test_service_Creates(t *testing.T) {
 		mockDBTx.EXPECT().
 			DoTransaction(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted, ReadOnly: false},
 				gomock.Any()).
-			DoAndReturn(func(ctx context.Context, tx *sql.TxOptions, fn func(tx *db.SqlxWrapper) error) error {
-				mockSqlxWrapper := &db.SqlxWrapper{}
+			DoAndReturn(func(ctx context.Context, tx *sql.TxOptions, fn func(tx db.Rdbms) error) error {
+				mockSqlxWrapper := db.NewRdbms(nil)
 				mockProductRepository.EXPECT().
 					Creates(ctx, products.CreatesInput{
 						Transaction: mockSqlxWrapper,

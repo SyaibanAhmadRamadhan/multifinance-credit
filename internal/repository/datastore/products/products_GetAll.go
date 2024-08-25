@@ -37,15 +37,7 @@ func (r *repository) GetAll(ctx context.Context, input GetAllInput) (output GetA
 	}
 	totalData := int64(0)
 
-	row, stmt, err := rdbms.QueryRowxContext(ctx, rawQueryCount, args...)
-	if err != nil {
-		return output, tracer.Error(err)
-	}
-	defer func() {
-		if errClose := stmt.Close(); errClose != nil {
-			log.Err(errClose).Msg("failed closed stmt")
-		}
-	}()
+	row := rdbms.QueryRowxContext(ctx, rawQueryCount, args...)
 
 	err = row.Scan(&totalData)
 	if err != nil {
@@ -62,18 +54,13 @@ func (r *repository) GetAll(ctx context.Context, input GetAllInput) (output GetA
 		return output, tracer.Error(err)
 	}
 
-	rows, stmt, err := rdbms.QueryxContext(ctx, rawQuery, args...)
+	rows, err := rdbms.QueryxContext(ctx, rawQuery, args...)
 	if err != nil {
 		return output, tracer.Error(err)
 	}
 	defer func() {
 		if errRowsClose := rows.Close(); errRowsClose != nil {
 			log.Err(errRowsClose).Msg("failed closed row")
-		}
-	}()
-	defer func() {
-		if errClose := stmt.Close(); errClose != nil {
-			log.Err(errClose).Msg("failed closed stmt")
 		}
 	}()
 

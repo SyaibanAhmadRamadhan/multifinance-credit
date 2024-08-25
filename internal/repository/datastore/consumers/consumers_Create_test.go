@@ -22,7 +22,7 @@ func Test_repository_Create(t *testing.T) {
 	ctx := context.TODO()
 	sqlxDB := sqlx.NewDb(dbMock, "sqlmock")
 
-	sqlxx := db.NewSqlxWrapper(sqlxDB)
+	sqlxx := db.NewRdbms(sqlxDB)
 
 	r := consumers.NewRepository(sqlxx)
 
@@ -41,10 +41,10 @@ func Test_repository_Create(t *testing.T) {
 
 		expectedID := rand.Int63()
 
-		mock.ExpectPrepare(regexp.QuoteMeta(
+		mock.ExpectExec(regexp.QuoteMeta(
 			`INSERT INTO consumers (user_id,nik,full_name,legal_name,place_of_birth,date_of_birth,salary,photo_ktp,photo_selfie,created_at,updated_at) 
 					VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
-		)).ExpectExec().WithArgs(
+		)).WithArgs(
 			expectedInput.UserID, expectedInput.Nik, expectedInput.FullName, expectedInput.LegalName,
 			expectedInput.PlaceOfBirth, expectedInput.DateOfBirth, expectedInput.Salary, expectedInput.PhotoKTP, expectedInput.PhotoSelfie,
 			sqlmock.AnyArg(), sqlmock.AnyArg(),
