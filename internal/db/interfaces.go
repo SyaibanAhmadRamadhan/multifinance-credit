@@ -15,14 +15,14 @@ type SqlxTransaction interface {
 type Rdbms interface {
 	// reader command
 
-	Query(ctx context.Context, query squirrel.SelectBuilder, callback callbackRows) error
-	QueryPagination(ctx context.Context, countQuery, query squirrel.SelectBuilder, paginationInput pagination.PaginationInput, callback callbackRows) (
+	QuerySq(ctx context.Context, query squirrel.Sqlizer, callback callbackRows) error
+	QuerySqPagination(ctx context.Context, countQuery, query squirrel.SelectBuilder, paginationInput pagination.PaginationInput, callback callbackRows) (
 		pagination.PaginationOutput, error)
-	QueryRow(ctx context.Context, query squirrel.SelectBuilder, scanType QueryRowScanType, dest interface{}) error
+	QueryRowSq(ctx context.Context, query squirrel.Sqlizer, scanType QueryRowScanType, dest interface{}) error
 
 	// writer command
 
-	Exec(ctx context.Context, query string, arg ...interface{}) (sql.Result, error)
+	ExecSq(ctx context.Context, query squirrel.Sqlizer) (sql.Result, error)
 }
 
 type queryExecutor interface {

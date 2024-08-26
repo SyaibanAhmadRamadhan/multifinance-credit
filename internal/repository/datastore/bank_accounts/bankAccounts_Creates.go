@@ -23,12 +23,7 @@ func (r *repository) Creates(ctx context.Context, input CreatesInput) (err error
 		query = query.Values(item.ConsumerID, item.Name, item.AccountNumber, item.AccountHolderName)
 	}
 
-	rawQuery, args, err := query.ToSql()
-	if err != nil {
-		return tracer.Error(err)
-	}
-
-	_, err = rdbms.Exec(ctx, rawQuery, args...)
+	_, err = rdbms.ExecSq(ctx, query)
 	if err != nil {
 		return tracer.Error(err)
 	}

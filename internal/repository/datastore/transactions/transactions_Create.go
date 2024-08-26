@@ -19,12 +19,7 @@ func (r *repository) Create(ctx context.Context, input CreateInput) (output Crea
 		time.Now().UTC(), time.Now().UTC(),
 	)
 
-	rawQuery, args, err := query.ToSql()
-	if err != nil {
-		return output, tracer.Error(err)
-	}
-
-	res, err := rdbms.Exec(ctx, rawQuery, args...)
+	res, err := rdbms.ExecSq(ctx, query)
 	if err != nil {
 		return output, tracer.Error(err)
 	}

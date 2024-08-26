@@ -7,20 +7,16 @@ import (
 )
 
 func (r *repository) Update(ctx context.Context, input UpdateInput) (err error) {
-	rawQuery, args, err := r.sq.Update("limits").
+	query := r.sq.Update("limits").
 		Set("remaining_amount", input.RemainingAmount).
-		Where(squirrel.Eq{"id": input.ID}).
-		ToSql()
-	if err != nil {
-		return tracer.Error(err)
-	}
+		Where(squirrel.Eq{"id": input.ID})
 
 	rdbms := r.sqlx
 	if input.Transaction != nil {
 		rdbms = input.Transaction
 	}
 
-	_, err = rdbms.Exec(ctx, rawQuery, args...)
+	_, err = rdbms.ExecSq(ctx, query)
 	if err != nil {
 		return tracer.Error(err)
 	}

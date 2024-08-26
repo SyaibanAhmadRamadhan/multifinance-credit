@@ -34,7 +34,7 @@ func (r *repository) GetAll(ctx context.Context, input GetAllInput) (output GetA
 		Items: make([]GetAllOutputItem, 0),
 	}
 
-	output.Pagination, err = rdbms.QueryPagination(ctx, queryCount, query, input.Pagination, func(rows *sqlx.Rows) (err error) {
+	output.Pagination, err = rdbms.QuerySqPagination(ctx, queryCount, query, input.Pagination, func(rows *sqlx.Rows) (err error) {
 		for rows.Next() {
 			item := GetAllOutputItem{}
 			err = rows.StructScan(&item)

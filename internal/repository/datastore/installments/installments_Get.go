@@ -15,7 +15,7 @@ func (r *repository) Get(ctx context.Context, input GetInput) (output GetOutput,
 		query = query.Where(squirrel.Eq{"id": input.ID.Int64})
 	}
 
-	err = r.sqlx.QueryRow(ctx, query, db.QueryRowScanTypeStruct, &output)
+	err = r.sqlx.QueryRowSq(ctx, query, db.QueryRowScanTypeStruct, &output)
 	if err != nil {
 		return output, tracer.Error(err)
 	}

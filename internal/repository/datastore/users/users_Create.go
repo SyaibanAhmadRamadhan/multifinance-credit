@@ -12,14 +12,11 @@ func (r *repository) Create(ctx context.Context, input CreateInput) (output Crea
 		rdbms = input.Transaction
 	}
 
-	query, args, err := r.sq.Insert("users").
+	query := r.sq.Insert("users").
 		Columns("email", "password", "created_at").
-		Values(input.Email, input.Password, time.Now().UTC()).ToSql()
-	if err != nil {
-		return output, tracer.Error(err)
-	}
+		Values(input.Email, input.Password, time.Now().UTC())
 
-	res, err := rdbms.Exec(ctx, query, args...)
+	res, err := rdbms.ExecSq(ctx, query)
 	if err != nil {
 		return output, tracer.Error(err)
 	}
