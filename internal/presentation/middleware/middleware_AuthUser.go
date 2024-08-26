@@ -43,14 +43,12 @@ func (m *middleware) AuthUser(next http.Handler) http.Handler {
 
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
-			w.Header().Set("X-Request-ID", span.SpanContext().SpanID().String())
 			restapi.Error(w, r, http.StatusUnauthorized, errors.New("header Authorization not exists"), "invalid authorization")
 			return
 		}
 
 		token, err := parseAuthorizationHeader(authHeader)
 		if err != nil {
-			w.Header().Set("X-Request-ID", span.SpanContext().SpanID().String())
 			restapi.Error(w, r, http.StatusUnauthorized, err, "invalid authorization")
 			return
 		}
@@ -60,7 +58,6 @@ func (m *middleware) AuthUser(next http.Handler) http.Handler {
 			TokenType: primitive.TokenTypeAccessToken,
 		})
 		if err != nil {
-			w.Header().Set("X-Request-ID", span.SpanContext().SpanID().String())
 			if errors.Is(err, auth.ErrTokenIsExpired) {
 				restapi.Error(w, r, http.StatusUnauthorized, err, "your token is expired, you can log in again")
 			} else if errors.Is(err, auth.ErrInvalidToken) {
