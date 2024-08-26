@@ -66,7 +66,7 @@ type rdbms struct {
 	attrs  []attribute.KeyValue
 }
 
-func (s *rdbms) Query(ctx context.Context, query squirrel.SelectBuilder, callback callbackRows) error {
+func (s *rdbms) QuerySq(ctx context.Context, query squirrel.Sqlizer, callback callbackRows) error {
 	rawQuery, args, err := query.ToSql()
 	if err != nil {
 		return tracer.Error(err)
@@ -96,7 +96,7 @@ func (s *rdbms) Query(ctx context.Context, query squirrel.SelectBuilder, callbac
 	return callback(res)
 }
 
-func (s *rdbms) QueryPagination(ctx context.Context, countQuery, query squirrel.SelectBuilder, paginationInput pagination.PaginationInput, callback callbackRows) (
+func (s *rdbms) QuerySqPagination(ctx context.Context, countQuery, query squirrel.SelectBuilder, paginationInput pagination.PaginationInput, callback callbackRows) (
 	pagination.PaginationOutput, error) {
 
 	offset := pagination.GetOffsetValue(paginationInput.Page, paginationInput.PageSize)
@@ -104,12 +104,12 @@ func (s *rdbms) QueryPagination(ctx context.Context, countQuery, query squirrel.
 	query = query.Offset(uint64(offset))
 
 	totalData := int64(0)
-	err := s.QueryRow(ctx, countQuery, QueryRowScanTypeDefault, &totalData)
+	err := s.QueryRowSq(ctx, countQuery, QueryRowScanTypeDefault, &totalData)
 	if err != nil {
 		return pagination.PaginationOutput{}, tracer.Error(err)
 	}
 
-	err = s.Query(ctx, query, callback)
+	err = s.QuerySq(ctx, query, callback)
 	if err != nil {
 		return pagination.PaginationOutput{}, tracer.Error(err)
 	}
@@ -117,16 +117,21 @@ func (s *rdbms) QueryPagination(ctx context.Context, countQuery, query squirrel.
 	return pagination.CreatePaginationOutput(paginationInput, totalData), nil
 }
 
-func (s *rdbms) Exec(ctx context.Context, query string, arg ...interface{}) (sql.Result, error) {
-	ctx, spanExec := s.tracer.Start(ctx, query, []trace.SpanStartOption{
+func (s *rdbms) ExecSq(ctx context.Context, query squirrel.Sqlizer) (sql.Result, error) {
+	rawQuery, args, err := query.ToSql()
+	if err != nil {
+		return nil, tracer.Error(err)
+	}
+
+	ctx, spanExec := s.tracer.Start(ctx, rawQuery, []trace.SpanStartOption{
 		trace.WithSpanKind(trace.SpanKindClient),
 		trace.WithAttributes(s.attrs...),
-		trace.WithAttributes(DBStatement.String(query)),
-		trace.WithAttributes(makeParamAttr(arg)),
+		trace.WithAttributes(DBStatement.String(rawQuery)),
+		trace.WithAttributes(makeParamAttr(args)),
 	}...)
 	defer spanExec.End()
 
-	res, err := s.db.ExecContext(ctx, query, arg...)
+	res, err := s.db.ExecContext(ctx, rawQuery, args...)
 	if err != nil {
 		recordError(spanExec, err)
 		return nil, err
@@ -135,7 +140,7 @@ func (s *rdbms) Exec(ctx context.Context, query string, arg ...interface{}) (sql
 	return res, nil
 }
 
-func (s *rdbms) QueryRow(ctx context.Context, query squirrel.SelectBuilder, scanType QueryRowScanType, dest interface{}) error {
+func (s *rdbms) QueryRowSq(ctx context.Context, query squirrel.Sqlizer, scanType QueryRowScanType, dest interface{}) error {
 	rawQuery, args, err := query.ToSql()
 	if err != nil {
 		return tracer.Error(err)

@@ -28,7 +28,7 @@ func (r *repository) Get(ctx context.Context, input GetInput) (output GetOutput,
 		query = query.Where(squirrel.Eq{"tenor": input.Tenor.Int32})
 	}
 
-	err = rdbms.QueryRow(ctx, query, db.QueryRowScanTypeStruct, &output)
+	err = rdbms.QueryRowSq(ctx, query, db.QueryRowScanTypeStruct, &output)
 	if err != nil {
 		return output, tracer.Error(err)
 	}

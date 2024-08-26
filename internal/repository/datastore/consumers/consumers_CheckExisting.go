@@ -20,7 +20,7 @@ func (r *repository) CheckExisting(ctx context.Context, input CheckExistingInput
 	query = query.Suffix(")")
 
 	var existing bool
-	err = r.sqlx.QueryRow(ctx, query, db.QueryRowScanTypeDefault, &existing)
+	err = r.sqlx.QueryRowSq(ctx, query, db.QueryRowScanTypeDefault, &existing)
 	if err != nil {
 		return output, tracer.Error(err)
 	}

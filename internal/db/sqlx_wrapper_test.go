@@ -29,7 +29,7 @@ func Test_sqlxWrapper_Queryx(t *testing.T) {
 			WithArgs(1).
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 
-		err := sqlxx.Query(ctx, query, func(rows *sqlx.Rows) (err error) {
+		err := sqlxx.QuerySq(ctx, query, func(rows *sqlx.Rows) (err error) {
 			for rows.Next() {
 				var id int
 				err := rows.Scan(&id)
@@ -52,7 +52,7 @@ func Test_sqlxWrapper_Queryx(t *testing.T) {
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 
 		var id int
-		err = sqlxx.QueryRow(ctx, query, db.QueryRowScanTypeDefault, &id)
+		err = sqlxx.QueryRowSq(ctx, query, db.QueryRowScanTypeDefault, &id)
 		require.NoError(t, err)
 
 		require.NoError(t, mock.ExpectationsWereMet())
@@ -67,7 +67,7 @@ func Test_sqlxWrapper_Queryx(t *testing.T) {
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 
 		var id int
-		err = sqlxx.QueryRow(ctx, query, db.QueryRowScanTypeDefault, &id)
+		err = sqlxx.QueryRowSq(ctx, query, db.QueryRowScanTypeDefault, &id)
 		require.NoError(t, err)
 
 		require.NoError(t, mock.ExpectationsWereMet())

@@ -23,13 +23,10 @@ func (r *repository) Updates(ctx context.Context, input UpdatesInput) (err error
 		caseClause = caseClause.When(fmt.Sprintf("%d", item.ID), fmt.Sprintf("%d", item.Qty))
 	}
 
-	rawQuery, args, err := r.sq.Update("products").Set("qty", caseClause).
-		Where(squirrel.Eq{"id": getItemIDs(input.Items)}).ToSql()
-	if err != nil {
-		return tracer.Error(err)
-	}
+	query := r.sq.Update("products").Set("qty", caseClause).
+		Where(squirrel.Eq{"id": getItemIDs(input.Items)})
 
-	_, err = rdbms.Exec(ctx, rawQuery, args...)
+	_, err = rdbms.ExecSq(ctx, query)
 	if err != nil {
 		return tracer.Error(err)
 	}
