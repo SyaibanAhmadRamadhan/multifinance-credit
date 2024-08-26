@@ -60,7 +60,7 @@ init: starting-infra \
 	run
 
 run:
-	air -c air.toml
+	air -c air.toml rest-api
 
 clean:
 	rm -rf dist/* generated build vendor

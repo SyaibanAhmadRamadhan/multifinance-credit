@@ -12,7 +12,7 @@ func newLogger() {
 	case "prod":
 		level = zerolog.InfoLevel
 	default:
-		level = zerolog.ErrorLevel
+		level = zerolog.DebugLevel
 	}
 
 	log.Logger = zerolog.New(zerolog.ConsoleWriter{
