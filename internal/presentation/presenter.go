@@ -36,9 +36,9 @@ func New(presenter *Presenter) *http.Server {
 	server := &http.Server{
 		Addr:              fmt.Sprintf(":%d", conf.GetConfig().AppPort),
 		Handler:           r,
-		ReadTimeout:       5 * time.Second,
-		ReadHeaderTimeout: 5 * time.Second,
-		WriteTimeout:      5 * time.Second,
+		ReadTimeout:       10 * time.Second,
+		ReadHeaderTimeout: 10 * time.Second,
+		WriteTimeout:      10 * time.Second,
 	}
 
 	return server
