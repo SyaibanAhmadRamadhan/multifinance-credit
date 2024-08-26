@@ -28,7 +28,7 @@ func (s *service) Create(ctx context.Context, input CreateInput) (output CreateO
 	}
 
 	err = s.dbTx.DoTransaction(ctx, &sql.TxOptions{
-		Isolation: sql.LevelReadCommitted,
+		Isolation: sql.LevelSerializable,
 		ReadOnly:  false,
 	}, func(tx db.Rdbms) (err error) {
 		// GET DATA LIMIT
@@ -36,7 +36,6 @@ func (s *service) Create(ctx context.Context, input CreateInput) (output CreateO
 			Tx:         tx,
 			Locking:    db.LockingUpdate,
 			ID:         null.IntFrom(input.LimitID),
-			Tenor:      null.Int32{},
 			ConsumerID: null.IntFrom(input.ConsumerID),
 		})
 		if err != nil {
@@ -175,7 +174,7 @@ func (s *service) processInsertDataTransactionAndUpdateProduct(ctx context.Conte
 			Image:      product.Image,
 			Qty:        product.Qty,
 			UnitPrice:  product.Price,
-			Amount:     float64(product.Qty) * product.Price,
+			Amount:     float64(orderProducts[product.ID]) * product.Price,
 		})
 
 		updateProducts = append(updateProducts, products.UpdatesInputItem{
